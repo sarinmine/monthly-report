@@ -1,0 +1,956 @@
+<div id="app"></div>
+
+<style>
+  :root {
+    --bg: #F3F4F6;
+    --paper: #FFFFFF;
+    --accent-brand: #1F3A5F;
+    --accent-brand-dim: #4A5F7A;
+    --header-dark: #1F2937;
+    --total-bg: #FCE9A8;
+    --border: #E5E7EB;
+    --border-strong: #111827;
+    --text: #1A1F27;
+    --text-muted: #6B7280;
+    --danger: #DC2626;
+    --font-body: 'Inter', sans-serif;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  * { box-sizing: border-box; }
+
+  #app {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    padding: 24px 20px 80px;
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+  }
+  .toolbar-brand {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-brand);
+    font-weight: 600;
+    margin-right: auto;
+  }
+  select.report-select {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--text);
+    min-width: 200px;
+    max-width: 260px;
+  }
+  .tb-btn {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    white-space: nowrap;
+  }
+  .tb-btn:hover { background: #F9FAFB; }
+  .tb-btn.primary { background: var(--accent-brand); color: #fff; border-color: var(--accent-brand); }
+  .tb-btn.primary:hover { filter: brightness(1.1); }
+  .tb-btn.danger-btn { color: var(--danger); border-color: #FCA5A5; }
+  .tb-btn.danger-btn:hover { background: #FEF2F2; }
+
+  .confirm-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 7px;
+    padding: 6px 10px; font-size: 12.5px; color: #991B1B;
+  }
+  .toast-msg {
+    background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534;
+    border-radius: 7px; padding: 6px 10px; font-size: 12.5px; font-weight: 500;
+  }
+  .toast-msg.error { background: #FEF2F2; border-color: #FCA5A5; color: #991B1B; }
+
+  .email-preview-wrap {
+    background: #FFFFFF; border: 2px solid var(--accent-brand); border-radius: 10px;
+    margin-bottom: 20px; overflow: hidden;
+  }
+  .email-preview-instructions {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    background: #EEF2F7; padding: 10px 14px; font-size: 12.5px; color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  .email-preview-frame {
+    padding: 20px; max-height: 520px; overflow-y: auto; background: #F9FAFB;
+  }
+  #email-preview-content {
+    background: #FFFFFF; padding: 24px; border: 1px solid var(--border); border-radius: 6px;
+    user-select: text;
+  }
+
+  /* ---------- Letter paper ---------- */
+  .paper {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(16,24,40,0.06);
+    padding: 48px 56px;
+  }
+
+  .line-input {
+    border: none;
+    border-bottom: 1px dashed #C7CDD6;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text);
+    padding: 1px 3px;
+    outline: none;
+    min-width: 80px;
+  }
+  .line-input:focus { border-bottom-color: var(--accent-brand); }
+  .line-input.wide { min-width: 220px; }
+  .line-input.xwide { min-width: 320px; }
+
+  p.salutation { font-size: 14px; margin: 0 0 10px; line-height: 1.7; }
+
+  .hotel-heading-row { text-align: center; margin: 22px 0 14px; }
+  input.hotel-heading {
+    font-family: var(--font-body);
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    border: none;
+    border-bottom: 1px dashed #C7CDD6;
+    background: transparent;
+    color: var(--text);
+    width: 100%;
+    padding: 4px 2px;
+    outline: none;
+  }
+  input.hotel-heading:focus { border-bottom-color: var(--accent-brand); }
+  input.hotel-heading::placeholder { color: #B9C0CB; font-weight: 600; }
+
+  hr.divider { border: none; border-top: 2px solid var(--border-strong); margin: 8px 0 22px; }
+
+  .detail-grid { display: grid; grid-template-columns: 190px 1fr; row-gap: 7px; column-gap: 10px; margin-bottom: 16px; font-size: 14px; }
+  .detail-label { font-weight: 700; color: var(--text); }
+  .link-field-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  a.dashboard-link { color: #1D4ED8; text-decoration: underline; font-size: 14px; }
+
+  p.italic-note { font-style: italic; font-size: 13px; color: var(--text-muted); margin: 0 0 24px; }
+
+  h2.section-title { font-size: 15px; font-weight: 700; margin: 26px 0 10px; }
+
+  /* ---------- Tables ---------- */
+  .table-block { margin-bottom: 22px; border: 1px solid var(--border); border-radius: 8px; padding: 14px; background: #FAFBFC; }
+  .table-block-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  input.table-title-input {
+    font-size: 14px; font-weight: 700; border: none; border-bottom: 1px dashed #C7CDD6;
+    background: transparent; padding: 2px 3px; outline: none; flex: 1; min-width: 180px;
+  }
+  input.table-title-input:focus { border-bottom-color: var(--accent-brand); }
+  .mode-toggle { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .mode-toggle button {
+    background: #fff; border: none; font-size: 11.5px; padding: 6px 9px; cursor: pointer; color: var(--text-muted); font-family: var(--font-body);
+  }
+  .mode-toggle button.active { background: var(--accent-brand); color: #fff; }
+  .icon-btn {
+    background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted);
+    cursor: pointer; font-size: 12px; padding: 5px 8px; font-family: var(--font-body);
+  }
+  .icon-btn:hover { color: var(--danger); border-color: #FCA5A5; background: #FEF2F2; }
+
+  .table-scroll { overflow-x: auto; }
+  table.perf { border-collapse: collapse; width: 100%; min-width: 980px; }
+  table.perf th {
+    background: var(--header-dark); color: #fff; font-size: 10.5px; letter-spacing: 0.03em;
+    text-transform: uppercase; padding: 8px 7px; text-align: center; white-space: nowrap; font-weight: 600;
+  }
+  table.perf td { padding: 4px 5px; border: 1px solid var(--border); text-align: center; }
+  table.perf tr.total-row td { background: var(--total-bg); font-weight: 700; }
+  table.perf input.cell-input {
+    width: 100%; min-width: 62px; border: none; background: transparent; text-align: center;
+    font-size: 12.5px; padding: 5px 3px; outline: none; font-family: var(--font-body); color: var(--text);
+  }
+  table.perf input.cell-input:focus { background: #EEF2F7; border-radius: 3px; }
+  td.row-actions { border: none; padding: 4px 6px; white-space: nowrap; }
+  .row-btn {
+    background: none; border: none; cursor: pointer; font-size: 12px; color: var(--text-muted); padding: 2px 4px;
+  }
+  .row-btn:hover { color: var(--danger); }
+  .row-btn.total-toggle.active { color: #B8860B; font-weight: 700; }
+
+  .sheet-link-box {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: #fff;
+    border: 1px dashed var(--border); border-radius: 7px; padding: 12px;
+  }
+  .sheet-link-box .line-input { flex: 1; min-width: 220px; }
+  .sheet-link-box a {
+    color: #1D4ED8; text-decoration: underline; font-size: 13px; white-space: nowrap;
+  }
+
+  .add-row-btn, .add-table-btn {
+    background: #fff; border: 1px dashed var(--border); border-radius: 6px; color: var(--accent-brand);
+    font-size: 12.5px; font-weight: 600; padding: 7px 12px; cursor: pointer; font-family: var(--font-body);
+  }
+  .add-row-btn:hover, .add-table-btn:hover { background: #EEF2F7; }
+  .add-table-btn { display: block; margin: 0 auto 24px; }
+
+  /* ---------- Summary / bullets ---------- */
+  .summary-heading { font-size: 15px; font-weight: 700; margin: 26px 0 8px; }
+  ul.bullet-list { margin: 0 0 6px; padding-left: 20px; }
+  ul.bullet-list li { font-size: 14px; margin-bottom: 5px; line-height: 1.6; }
+
+  .bullet-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .bullet-row .line-input { flex: 1; }
+  .bullet-row .row-btn { flex-shrink: 0; }
+
+  .note-box {
+    background: #FEF9E7; border: 1px solid #F5E6A8; border-radius: 6px; padding: 10px 12px;
+    font-size: 12.5px; color: #6B5A00; margin: 22px 0 14px;
+  }
+  p.closing { font-size: 14px; margin-top: 8px; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+
+  /* ---------- Print ---------- */
+  @media print {
+    body * { visibility: hidden; }
+    #app, #app * { visibility: visible; }
+    #app { background: #fff; padding: 0; }
+    .toolbar, .mode-toggle, .icon-btn, .add-row-btn, .add-table-btn, .row-btn, td.row-actions, .sheet-link-box a.hint, .email-preview-wrap { display: none !important; }
+    .paper { box-shadow: none; border: none; padding: 0; }
+    .line-input, input.hotel-heading, input.table-title-input, table.perf input.cell-input {
+      border: none !important; background: transparent !important;
+    }
+    .table-block { border: none; padding: 0; background: #fff; }
+    table.perf { min-width: 0; width: 100%; }
+  }
+
+  @media (max-width: 700px) {
+    .paper { padding: 28px 20px; }
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+(function () {
+  const STORAGE_KEY = 'monthly_reports';
+  const app = document.getElementById('app');
+
+  const COLUMNS = [
+    { key: 'month', label: 'Month' },
+    { key: 'adSpent', label: 'Ad Spent' },
+    { key: 'impressions', label: 'Impressions' },
+    { key: 'cpm', label: 'CPM' },
+    { key: 'clicks', label: 'Clicks' },
+    { key: 'cpc', label: 'CPC' },
+    { key: 'ctr', label: 'CTR' },
+    { key: 'conversions', label: 'Conversions' },
+    { key: 'cpa', label: 'CPA' },
+    { key: 'cvr', label: 'CVR' },
+    { key: 'abv', label: 'ABV' },
+    { key: 'revenue', label: 'Revenue' },
+    { key: 'roas', label: 'ROAS' }
+  ];
+
+  let reports = [];
+  let currentId = null;
+  let loaded = false;
+  let pendingDeleteReport = false;
+  let saveTimer = null;
+  let toastMsg = null; // { text, isError }
+  let toastTimer = null;
+  let showEmailPreview = false;
+
+  function uid(prefix) {
+    return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function blankRow() {
+    const cells = {};
+    COLUMNS.forEach(c => cells[c.key] = '');
+    return { id: uid('row'), isTotal: false, cells };
+  }
+
+  function blankTable(title) {
+    return { id: uid('tbl'), title, mode: 'manual', sheetUrl: '', rows: [blankRow(), blankRow()] };
+  }
+
+  function newReport() {
+    return {
+      id: uid('rep'),
+      dearName: '',
+      attributionFor: '',
+      asOfDate: '',
+      hotelNameBig: '',
+      campaign: '',
+      campaignPeriod: '',
+      campaignEnd: '',
+      periodDays: '',
+      budgetUsd: '',
+      reportDate: '',
+      dashboardLinkText: '',
+      dashboardLinkUrl: '',
+      tables: [
+        blankTable('Overall Performance'),
+        blankTable('Channel 1: Display PT'),
+        blankTable('Channel 2: Display RT')
+      ],
+      summaryMonth: '',
+      monthRevenue: '',
+      allTimeRevenue: '',
+      keyHighlights: [''],
+      nextSteps: ['']
+    };
+  }
+
+  function getReport() {
+    return reports.find(r => r.id === currentId) || null;
+  }
+
+  function getPath(obj, path) {
+    const parts = path.split('.');
+    let cur = obj;
+    for (const p of parts) {
+      if (cur == null) return '';
+      cur = cur[/^\d+$/.test(p) ? parseInt(p, 10) : p];
+    }
+    return cur == null ? '' : cur;
+  }
+
+  function setPath(obj, path, value) {
+    const parts = path.split('.');
+    let cur = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const p = parts[i];
+      cur = cur[/^\d+$/.test(p) ? parseInt(p, 10) : p];
+    }
+    const last = parts[parts.length - 1];
+    cur[/^\d+$/.test(last) ? parseInt(last, 10) : last] = value;
+  }
+
+  async function loadData() {
+    try {
+      const result = await window.storage.get(STORAGE_KEY, true);
+      reports = result ? JSON.parse(result.value) : [];
+    } catch (e) {
+      reports = [];
+    }
+    if (reports.length === 0) {
+      const r = newReport();
+      reports.push(r);
+    }
+    currentId = reports[0].id;
+    loaded = true;
+    render();
+  }
+
+  function scheduleSave() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveData, 500);
+  }
+
+  async function saveData() {
+    try {
+      await window.storage.set(STORAGE_KEY, JSON.stringify(reports), true);
+    } catch (e) {
+      // best-effort; ignore
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : str;
+    return div.innerHTML;
+  }
+
+  function reportLabel(r) {
+    const name = r.hotelNameBig && r.hotelNameBig.trim() ? r.hotelNameBig.trim() : 'Untitled report';
+    const date = r.reportDate && r.reportDate.trim() ? ' — ' + r.reportDate.trim() : '';
+    return name + date;
+  }
+
+  /* ---------- Actions that change structure (trigger full render) ---------- */
+  function actionNewReport() {
+    const r = newReport();
+    reports.unshift(r);
+    currentId = r.id;
+    pendingDeleteReport = false;
+    scheduleSave();
+    render();
+  }
+
+  function actionDuplicateReport() {
+    const cur = getReport();
+    if (!cur) return;
+    const copy = JSON.parse(JSON.stringify(cur));
+    copy.id = uid('rep');
+    copy.hotelNameBig = (cur.hotelNameBig || '') + ' (copy)';
+    copy.tables.forEach(t => { t.id = uid('tbl'); t.rows.forEach(row => row.id = uid('row')); });
+    reports.unshift(copy);
+    currentId = copy.id;
+    pendingDeleteReport = false;
+    scheduleSave();
+    render();
+  }
+
+  function actionSelectReport(id) {
+    currentId = id;
+    pendingDeleteReport = false;
+    render();
+  }
+
+  function actionRequestDelete() {
+    pendingDeleteReport = true;
+    render();
+  }
+  function actionCancelDelete() {
+    pendingDeleteReport = false;
+    render();
+  }
+  function actionConfirmDelete() {
+    reports = reports.filter(r => r.id !== currentId);
+    if (reports.length === 0) reports.push(newReport());
+    currentId = reports[0].id;
+    pendingDeleteReport = false;
+    scheduleSave();
+    render();
+  }
+
+  function actionAddTable() {
+    const cur = getReport();
+    cur.tables.push(blankTable('New Channel Table'));
+    scheduleSave();
+    render();
+  }
+  function actionRemoveTable(tableId) {
+    const cur = getReport();
+    cur.tables = cur.tables.filter(t => t.id !== tableId);
+    scheduleSave();
+    render();
+  }
+  function actionSetTableMode(tableId, mode) {
+    const cur = getReport();
+    const t = cur.tables.find(t => t.id === tableId);
+    t.mode = mode;
+    scheduleSave();
+    render();
+  }
+  function actionAddRow(tableId) {
+    const cur = getReport();
+    const t = cur.tables.find(t => t.id === tableId);
+    t.rows.push(blankRow());
+    scheduleSave();
+    render();
+  }
+  function actionRemoveRow(tableId, rowId) {
+    const cur = getReport();
+    const t = cur.tables.find(t => t.id === tableId);
+    t.rows = t.rows.filter(r => r.id !== rowId);
+    scheduleSave();
+    render();
+  }
+  function actionToggleTotal(tableId, rowId) {
+    const cur = getReport();
+    const t = cur.tables.find(t => t.id === tableId);
+    const row = t.rows.find(r => r.id === rowId);
+    row.isTotal = !row.isTotal;
+    scheduleSave();
+    render();
+  }
+
+  function actionAddBullet(field) {
+    const cur = getReport();
+    if (cur[field].length >= 6) return;
+    cur[field].push('');
+    scheduleSave();
+    render();
+  }
+  function actionRemoveBullet(field, idx) {
+    const cur = getReport();
+    cur[field].splice(idx, 1);
+    scheduleSave();
+    render();
+  }
+
+  function actionPrint() {
+    window.print();
+  }
+
+  function showToast(text, isError) {
+    toastMsg = { text, isError: !!isError };
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastMsg = null; render(); }, 3200);
+    render();
+  }
+
+  /* ---------- Email-safe export (Gmail / Outlook) ---------- */
+  function eesc(str) { return escapeHtml(str).replace(/\n/g, '<br>'); }
+
+  function buildEmailHtml(r) {
+    const FF = "font-family:Arial,Helvetica,sans-serif;";
+    const summaryMonthLabel = r.summaryMonth && r.summaryMonth.trim() ? r.summaryMonth.trim() : '';
+
+    const detailRow = (label, valueHtml) => `
+      <tr>
+        <td style="${FF}font-size:14px;font-weight:bold;color:#1a1f27;padding:3px 10px 3px 0;vertical-align:top;white-space:nowrap;">${eesc(label)}</td>
+        <td style="${FF}font-size:14px;color:#1a1f27;padding:3px 0;">${valueHtml}</td>
+      </tr>`;
+
+    const detailsTable = `
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
+        ${detailRow('Campaign:', eesc(r.campaign))}
+        ${detailRow('Campaign Period:', eesc(r.campaignPeriod))}
+        ${detailRow('Campaign End:', eesc(r.campaignEnd))}
+        ${detailRow('Period (days):', eesc(r.periodDays))}
+        ${detailRow('Budget (USD):', eesc(r.budgetUsd))}
+        ${detailRow('Report Date:', eesc(r.reportDate))}
+        ${detailRow('Monthly Report and Dashboard:', r.dashboardLinkUrl
+          ? `<a href="${escapeHtml(r.dashboardLinkUrl)}" style="color:#1D4ED8;text-decoration:underline;">${eesc(r.dashboardLinkText || 'Open link')}</a>`
+          : eesc(r.dashboardLinkText))}
+      </table>`;
+
+    const perfTable = (t) => {
+      const rows = t.rows.filter(row => COLUMNS.some(c => (row.cells[c.key] || '').trim() !== ''));
+      if (t.mode === 'link') {
+        return t.sheetUrl
+          ? `<p style="${FF}font-size:13px;color:#1a1f27;margin:0 0 16px;">Full data: <a href="${escapeHtml(t.sheetUrl)}" style="color:#1D4ED8;text-decoration:underline;">Open table in Google Sheets</a></p>`
+          : '';
+      }
+      if (rows.length === 0) return '';
+      return `
+        <table role="presentation" cellpadding="6" cellspacing="0" border="1" bordercolor="#E5E7EB" style="border-collapse:collapse;width:100%;margin-bottom:18px;${FF}">
+          <tr>
+            ${COLUMNS.map(c => `<td style="background:#1F2937;color:#ffffff;font-size:10.5px;font-weight:bold;text-transform:uppercase;text-align:center;">${eesc(c.label)}</td>`).join('')}
+          </tr>
+          ${rows.map(row => `
+            <tr${row.isTotal ? ' style="background:#FCE9A8;"' : ''}>
+              ${COLUMNS.map(c => `<td style="font-size:12.5px;text-align:center;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;">${eesc(row.cells[c.key])}</td>`).join('')}
+            </tr>`).join('')}
+        </table>`;
+    };
+
+    const tablesHtml = r.tables.map(t => `
+      <p style="${FF}font-size:14px;font-weight:bold;color:#1a1f27;margin:0 0 8px;">${eesc(t.title)}</p>
+      ${perfTable(t)}
+    `).join('');
+
+    const bulletList = (arr) => {
+      const items = arr.filter(v => v && v.trim() !== '');
+      if (items.length === 0) return '';
+      return `<ul style="${FF}font-size:14px;color:#1a1f27;margin:0 0 6px;padding-left:20px;">${items.map(v => `<li style="margin-bottom:5px;line-height:1.6;">${eesc(v)}</li>`).join('')}</ul>`;
+    };
+
+    const summaryBullets = `
+      <ul style="${FF}font-size:14px;color:#1a1f27;margin:0 0 6px;padding-left:20px;">
+        ${r.monthRevenue ? `<li style="margin-bottom:5px;line-height:1.6;">${eesc(summaryMonthLabel)} Reported Revenue: ${eesc(r.monthRevenue)}</li>` : ''}
+        ${r.allTimeRevenue ? `<li style="margin-bottom:5px;line-height:1.6;">All Time Reported Revenue: ${eesc(r.allTimeRevenue)}</li>` : ''}
+      </ul>`;
+
+    return `
+<table role="presentation" width="680" cellpadding="0" cellspacing="0" border="0" style="width:680px;max-width:100%;${FF}font-size:14px;color:#1a1f27;">
+  <tr><td style="padding:0 0 10px 0;">Dear Khun ${eesc(r.dearName)},</td></tr>
+  <tr><td style="padding:0 0 10px 0;">I hope you are doing well.</td></tr>
+  <tr><td style="padding:0 0 18px 0;">Please find below details for ${eesc(r.attributionFor)} attribution report as of ${eesc(r.asOfDate)}.</td></tr>
+  <tr><td style="text-align:center;padding:0 0 14px 0;"><span style="font-size:28px;font-weight:bold;${FF}">${eesc(r.hotelNameBig)}</span></td></tr>
+  <tr><td style="border-top:2px solid #111827;font-size:1px;line-height:1px;padding:0 0 14px 0;">&nbsp;</td></tr>
+  <tr><td style="padding:0 0 8px 0;">${detailsTable}</td></tr>
+  <tr><td style="font-style:italic;color:#6b7280;font-size:13px;padding:14px 0 22px 0;">Full version of Monthly Report and Dashboard will be in the attached link.</td></tr>
+  <tr><td>${tablesHtml}</td></tr>
+  <tr><td style="font-size:15px;font-weight:bold;padding:8px 0 8px 0;">Summary of ${eesc(summaryMonthLabel)} what happened?</td></tr>
+  <tr><td style="padding:0 0 6px 0;">${summaryBullets}</td></tr>
+  <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Key Highlights :</td></tr>
+  <tr><td style="padding:0 0 6px 0;">${bulletList(r.keyHighlights)}</td></tr>
+  <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
+  <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps)}</td></tr>
+  <tr><td style="padding:18px 0 14px 0;">
+    <table role="presentation" cellpadding="10" cellspacing="0" border="0" style="background:#FEF9E7;border:1px solid #F5E6A8;border-collapse:collapse;width:100%;">
+      <tr><td style="font-size:12.5px;color:#6B5A00;${FF}">*Note on Data Attribution: Please note that attribution data may continue to update within a 7&ndash;30 day attribution window following the initial report date. As the platform continues processing attribution signals and user journey reconciliation, additional bookings and revenue may be attributed back to the original reporting period in subsequent exports.</td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:4px 0 0 0;">If you have any questions, please let me know.</td></tr>
+</table>`;
+  }
+
+  function actionTogglePreview() {
+    showEmailPreview = !showEmailPreview;
+    render();
+    if (showEmailPreview) {
+      setTimeout(() => {
+        const el = document.getElementById('email-preview-content');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  }
+
+  function actionSelectPreview() {
+    const el = document.getElementById('email-preview-content');
+    if (!el) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+    showToast(`Selected! Now press ${isMac ? 'Cmd' : 'Ctrl'}+C, then paste into Gmail or Outlook.`);
+  }
+
+  function actionDownloadEmailHtml() {
+    const cur = getReport();
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(reportLabel(cur))}</title></head><body>${buildEmailHtml(cur)}</body></html>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (cur.hotelNameBig || 'report').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-email.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Downloaded — open the file, select all, and paste into Gmail or Outlook.');
+  }
+
+  /* ---------- Render ---------- */
+  function render() {
+    if (!loaded) {
+      app.innerHTML = `<div class="wrap"><div class="empty-state">Loading…</div></div>`;
+      return;
+    }
+    const cur = getReport();
+
+    const toolbarHtml = `
+      <div class="toolbar">
+        <div class="toolbar-brand">PMC Report Generator</div>
+        <select class="report-select" id="report-select">
+          ${reports.map(r => `<option value="${r.id}" ${r.id === currentId ? 'selected' : ''}>${escapeHtml(reportLabel(r))}</option>`).join('')}
+        </select>
+        <button class="tb-btn primary" id="btn-new">+ New Report</button>
+        <button class="tb-btn" id="btn-duplicate">Duplicate</button>
+        ${pendingDeleteReport ? `
+          <div class="confirm-bar">
+            Delete this report?
+            <button class="tb-btn danger-btn" id="btn-confirm-delete">Yes, delete</button>
+            <button class="tb-btn" id="btn-cancel-delete">Cancel</button>
+          </div>
+        ` : `<button class="tb-btn danger-btn" id="btn-delete">Delete</button>`}
+        ${toastMsg ? `<div class="toast-msg${toastMsg.isError ? ' error' : ''}">${escapeHtml(toastMsg.text)}</div>` : ''}
+        <button class="tb-btn" id="btn-print">Print / Export PDF</button>
+        <button class="tb-btn primary" id="btn-toggle-preview">${showEmailPreview ? 'Hide Email Preview' : 'Copy for Email'}</button>
+        <button class="tb-btn" id="btn-download-email">Download Email File</button>
+      </div>
+    `;
+
+    const previewHtml = showEmailPreview ? `
+      <div class="email-preview-wrap">
+        <div class="email-preview-instructions">
+          <b>Step 1:</b> click <b>Select All Content</b> below.
+          <b>Step 2:</b> press <b>Ctrl+C</b> (or <b>Cmd+C</b> on Mac) to copy.
+          <b>Step 3:</b> paste into a new Gmail or Outlook message.
+          <button class="tb-btn primary" id="btn-select-preview" style="margin-left:auto;">Select All Content</button>
+        </div>
+        <div class="email-preview-frame">
+          <div id="email-preview-content">${buildEmailHtml(cur)}</div>
+        </div>
+      </div>
+    ` : '';
+
+    const tablesHtml = cur.tables.map(t => renderTable(t)).join('');
+
+    const highlightsHtml = renderBulletEditor(cur.keyHighlights, 'keyHighlights');
+    const nextStepsHtml = renderBulletEditor(cur.nextSteps, 'nextSteps');
+
+    const summaryMonthLabel = cur.summaryMonth && cur.summaryMonth.trim() ? cur.summaryMonth.trim() : '\u2014';
+
+    app.innerHTML = `
+      <div class="wrap">
+        ${toolbarHtml}
+        ${previewHtml}
+        <div class="paper">
+          <p class="salutation">
+            Dear Khun <input class="line-input wide" data-path="dearName" placeholder="recipient name" value="${escapeHtml(cur.dearName)}" />,
+          </p>
+          <p class="salutation">I hope you are doing well.</p>
+          <p class="salutation">
+            Please find below details for
+            <input class="line-input wide" data-path="attributionFor" placeholder="e.g. Anantara Veli Maldives Resort" value="${escapeHtml(cur.attributionFor)}" />
+            attribution report as of
+            <input class="line-input" data-path="asOfDate" placeholder="31 Jul 2026" value="${escapeHtml(cur.asOfDate)}" />.
+          </p>
+
+          <div class="hotel-heading-row">
+            <input class="hotel-heading" data-path="hotelNameBig" placeholder="Hotel Name (Code)" value="${escapeHtml(cur.hotelNameBig)}" />
+          </div>
+          <hr class="divider" />
+
+          <div class="detail-grid">
+            <div class="detail-label">Campaign:</div>
+            <div><input class="line-input xwide" data-path="campaign" value="${escapeHtml(cur.campaign)}" /></div>
+
+            <div class="detail-label">Campaign Period:</div>
+            <div><input class="line-input xwide" data-path="campaignPeriod" placeholder="15 Jun 2026" value="${escapeHtml(cur.campaignPeriod)}" /></div>
+
+            <div class="detail-label">Campaign End:</div>
+            <div><input class="line-input xwide" data-path="campaignEnd" placeholder="15 Sep 2026" value="${escapeHtml(cur.campaignEnd)}" /></div>
+
+            <div class="detail-label">Period (days):</div>
+            <div><input class="line-input" data-path="periodDays" placeholder="93 days" value="${escapeHtml(cur.periodDays)}" /></div>
+
+            <div class="detail-label">Budget (USD):</div>
+            <div><input class="line-input" data-path="budgetUsd" placeholder="$5,000" value="${escapeHtml(cur.budgetUsd)}" /></div>
+
+            <div class="detail-label">Report Date:</div>
+            <div><input class="line-input xwide" data-path="reportDate" placeholder="5 Aug 2026" value="${escapeHtml(cur.reportDate)}" /></div>
+
+            <div class="detail-label">Monthly Report and Dashboard:</div>
+            <div class="link-field-row">
+              <input class="line-input" data-path="dashboardLinkText" placeholder="Link text" value="${escapeHtml(cur.dashboardLinkText)}" />
+              <input class="line-input xwide" data-path="dashboardLinkUrl" placeholder="https://..." value="${escapeHtml(cur.dashboardLinkUrl)}" />
+              ${cur.dashboardLinkUrl ? `<a class="dashboard-link" href="${escapeHtml(cur.dashboardLinkUrl)}" target="_blank" rel="noopener">${escapeHtml(cur.dashboardLinkText || 'Open link')} \u2197</a>` : ''}
+            </div>
+          </div>
+
+          <p class="italic-note">Full version of Monthly Report and Dashboard will be in the attached link.</p>
+
+          ${tablesHtml}
+          <button class="add-table-btn" id="btn-add-table">+ Add Channel Table</button>
+
+          <h2 class="summary-heading">
+            Summary of <input class="line-input" data-path="summaryMonth" placeholder="July 2026" value="${escapeHtml(cur.summaryMonth)}" /> what happened?
+          </h2>
+          <ul class="bullet-list">
+            <li>${escapeHtml(summaryMonthLabel)} Reported Revenue: <input class="line-input wide" data-path="monthRevenue" placeholder="49,220.95 USD with ROAS 30.39" value="${escapeHtml(cur.monthRevenue)}" /></li>
+            <li>All Time Reported Revenue: <input class="line-input wide" data-path="allTimeRevenue" placeholder="81,358.95 USD with ROAS 33.00" value="${escapeHtml(cur.allTimeRevenue)}" /></li>
+          </ul>
+
+          <h2 class="summary-heading">Key Highlights :</h2>
+          ${highlightsHtml}
+
+          <h2 class="summary-heading">Next Step :</h2>
+          ${nextStepsHtml}
+
+          <div class="note-box">
+            *Note on Data Attribution: Please note that attribution data may continue to update within a 7–30 day attribution window following the initial report date. As the platform continues processing attribution signals and user journey reconciliation, additional bookings and revenue may be attributed back to the original reporting period in subsequent exports.
+          </div>
+
+          <p class="closing">If you have any questions, please let me know.</p>
+        </div>
+      </div>
+    `;
+
+    bindEvents();
+  }
+
+  function renderTable(t) {
+    const rowsHtml = t.rows.map(row => `
+      <tr class="${row.isTotal ? 'total-row' : ''}">
+        ${COLUMNS.map(c => `
+          <td><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>
+        `).join('')}
+        <td class="row-actions">
+          <button class="row-btn total-toggle ${row.isTotal ? 'active' : ''}" data-action="toggle-total" data-table="${t.id}" data-row="${row.id}" title="Mark as TOTAL row">TOTAL</button>
+          <button class="row-btn" data-action="remove-row" data-table="${t.id}" data-row="${row.id}" title="Remove row">\u2715</button>
+        </td>
+      </tr>
+    `).join('');
+
+    return `
+      <div class="table-block">
+        <div class="table-block-head">
+          <input class="table-title-input" data-table-title="${t.id}" value="${escapeHtml(t.title)}" />
+          <div class="mode-toggle">
+            <button data-action="set-mode" data-mode="manual" data-table="${t.id}" class="${t.mode === 'manual' ? 'active' : ''}">Manual Table</button>
+            <button data-action="set-mode" data-mode="link" data-table="${t.id}" class="${t.mode === 'link' ? 'active' : ''}">Google Sheet Link</button>
+          </div>
+          <button class="icon-btn" data-action="remove-table" data-table="${t.id}" title="Remove this table">Remove table</button>
+        </div>
+
+        ${t.mode === 'manual' ? `
+          <div class="table-scroll">
+            <table class="perf">
+              <thead>
+                <tr>
+                  ${COLUMNS.map(c => `<th>${c.label}</th>`).join('')}
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+          <div style="margin-top:8px;">
+            <button class="add-row-btn" data-action="add-row" data-table="${t.id}">+ Add Row</button>
+          </div>
+        ` : `
+          <div class="sheet-link-box">
+            <span style="font-size:13px;color:var(--text-muted);">Google Sheet URL:</span>
+            <input class="line-input" data-table-sheet="${t.id}" placeholder="https://docs.google.com/spreadsheets/..." value="${escapeHtml(t.sheetUrl)}" />
+            ${t.sheetUrl ? `<a class="hint" href="${escapeHtml(t.sheetUrl)}" target="_blank" rel="noopener">Open table in Google Sheets \u2197</a>` : ''}
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  function renderBulletEditor(arr, field) {
+    const rows = arr.map((val, idx) => `
+      <div class="bullet-row">
+        <span style="color:var(--text-muted);font-size:13px;">\u2022</span>
+        <input class="line-input" data-bullet="${field}" data-idx="${idx}" value="${escapeHtml(val)}" placeholder="Type a point..." />
+        <button class="row-btn" data-action="remove-bullet" data-field="${field}" data-idx="${idx}" title="Remove">\u2715</button>
+      </div>
+    `).join('');
+    const addDisabled = arr.length >= 6;
+    return `
+      ${rows}
+      <button class="add-row-btn" data-action="add-bullet" data-field="${field}" ${addDisabled ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>+ Add point ${addDisabled ? '(max 6)' : ''}</button>
+    `;
+  }
+
+  function bindEvents() {
+    const cur = getReport();
+
+    // Toolbar
+    const sel = document.getElementById('report-select');
+    if (sel) sel.addEventListener('change', (e) => actionSelectReport(e.target.value));
+    const btnNew = document.getElementById('btn-new');
+    if (btnNew) btnNew.addEventListener('click', actionNewReport);
+    const btnDup = document.getElementById('btn-duplicate');
+    if (btnDup) btnDup.addEventListener('click', actionDuplicateReport);
+    const btnDel = document.getElementById('btn-delete');
+    if (btnDel) btnDel.addEventListener('click', actionRequestDelete);
+    const btnConfirmDel = document.getElementById('btn-confirm-delete');
+    if (btnConfirmDel) btnConfirmDel.addEventListener('click', actionConfirmDelete);
+    const btnCancelDel = document.getElementById('btn-cancel-delete');
+    if (btnCancelDel) btnCancelDel.addEventListener('click', actionCancelDelete);
+    const btnPrint = document.getElementById('btn-print');
+    if (btnPrint) btnPrint.addEventListener('click', actionPrint);
+    const btnTogglePreview = document.getElementById('btn-toggle-preview');
+    if (btnTogglePreview) btnTogglePreview.addEventListener('click', actionTogglePreview);
+    const btnSelectPreview = document.getElementById('btn-select-preview');
+    if (btnSelectPreview) btnSelectPreview.addEventListener('click', actionSelectPreview);
+    const btnDownloadEmail = document.getElementById('btn-download-email');
+    if (btnDownloadEmail) btnDownloadEmail.addEventListener('click', actionDownloadEmailHtml);
+    const btnAddTable = document.getElementById('btn-add-table');
+    if (btnAddTable) btnAddTable.addEventListener('click', actionAddTable);
+
+    // Simple field inputs (data-path)
+    app.querySelectorAll('input[data-path]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const path = inp.getAttribute('data-path');
+        setPath(cur, path, e.target.value);
+        scheduleSave();
+        // live-update dashboard link preview without full rerender
+        if (path === 'dashboardLinkUrl' || path === 'dashboardLinkText') {
+          updateDashboardLinkPreview(cur);
+        }
+        // auto-fill "attribution for" and "Campaign" from the hotel name
+        if (path === 'hotelNameBig') {
+          cur.attributionFor = e.target.value;
+          cur.campaign = e.target.value;
+          const attrInp = app.querySelector('input[data-path="attributionFor"]');
+          const campInp = app.querySelector('input[data-path="campaign"]');
+          if (attrInp) attrInp.value = e.target.value;
+          if (campInp) campInp.value = e.target.value;
+        }
+      });
+    });
+
+    // Table title
+    app.querySelectorAll('input[data-table-title]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const t = cur.tables.find(t => t.id === inp.getAttribute('data-table-title'));
+        t.title = e.target.value;
+        scheduleSave();
+      });
+    });
+
+    // Sheet URL
+    app.querySelectorAll('input[data-table-sheet]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const t = cur.tables.find(t => t.id === inp.getAttribute('data-table-sheet'));
+        t.sheetUrl = e.target.value;
+        scheduleSave();
+      });
+    });
+
+    // Cell inputs
+    app.querySelectorAll('input.cell-input').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const t = cur.tables.find(t => t.id === inp.getAttribute('data-table'));
+        const row = t.rows.find(r => r.id === inp.getAttribute('data-row'));
+        row.cells[inp.getAttribute('data-cell')] = e.target.value;
+        scheduleSave();
+      });
+    });
+
+    // Bullet inputs
+    app.querySelectorAll('input[data-bullet]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const field = inp.getAttribute('data-bullet');
+        const idx = parseInt(inp.getAttribute('data-idx'), 10);
+        cur[field][idx] = e.target.value;
+        scheduleSave();
+      });
+    });
+
+    // Action buttons (structural changes -> full render)
+    app.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.getAttribute('data-action');
+        const tableId = btn.getAttribute('data-table');
+        const rowId = btn.getAttribute('data-row');
+        if (action === 'add-row') actionAddRow(tableId);
+        else if (action === 'remove-row') actionRemoveRow(tableId, rowId);
+        else if (action === 'toggle-total') actionToggleTotal(tableId, rowId);
+        else if (action === 'remove-table') actionRemoveTable(tableId);
+        else if (action === 'set-mode') actionSetTableMode(tableId, btn.getAttribute('data-mode'));
+        else if (action === 'add-bullet') actionAddBullet(btn.getAttribute('data-field'));
+        else if (action === 'remove-bullet') actionRemoveBullet(btn.getAttribute('data-field'), parseInt(btn.getAttribute('data-idx'), 10));
+      });
+    });
+  }
+
+  function updateDashboardLinkPreview(cur) {
+    const row = document.querySelector('.link-field-row');
+    if (!row) return;
+    let a = row.querySelector('a.dashboard-link');
+    if (cur.dashboardLinkUrl) {
+      if (!a) {
+        a = document.createElement('a');
+        a.className = 'dashboard-link';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        row.appendChild(a);
+      }
+      a.href = cur.dashboardLinkUrl;
+      a.textContent = (cur.dashboardLinkText || 'Open link') + ' \u2197';
+    } else if (a) {
+      a.remove();
+    }
+  }
+
+  loadData();
+})();
+</script>
