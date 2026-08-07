@@ -132,6 +132,9 @@
   .line-input:focus { border-bottom-color: var(--accent-brand); }
   .line-input.wide { min-width: 220px; }
   .line-input.xwide { min-width: 320px; }
+  .line-input.date-input { min-width: 150px; font-family: var(--font-body); color: var(--text); }
+  .line-input.date-input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; }
+  .line-input.date-input:hover::-webkit-calendar-picker-indicator { opacity: 1; }
 
   p.salutation { font-size: 14px; margin: 0 0 10px; line-height: 1.7; }
 
@@ -217,6 +220,7 @@
   }
   .add-row-btn:hover, .add-table-btn:hover { background: #EEF2F7; }
   .add-table-btn { display: block; margin: 0 auto 24px; }
+  .paste-hint { font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
 
   /* ---------- Summary / bullets ---------- */
   .summary-heading { font-size: 15px; font-weight: 700; margin: 26px 0 8px; }
@@ -245,6 +249,7 @@
     .line-input, input.hotel-heading, input.table-title-input, table.perf input.cell-input {
       border: none !important; background: transparent !important;
     }
+    .line-input.date-input::-webkit-calendar-picker-indicator { display: none !important; }
     .table-block { border: none; padding: 0; background: #fff; }
     table.perf { min-width: 0; width: 100%; }
   }
@@ -289,14 +294,22 @@
     return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  function blankRow() {
+  function blankRow(month) {
     const cells = {};
     COLUMNS.forEach(c => cells[c.key] = '');
+    if (month) cells.month = month;
     return { id: uid('row'), isTotal: false, cells };
   }
 
+  function totalRow() {
+    const cells = {};
+    COLUMNS.forEach(c => cells[c.key] = '');
+    cells.month = 'TOTAL';
+    return { id: uid('row'), isTotal: true, cells };
+  }
+
   function blankTable(title) {
-    return { id: uid('tbl'), title, mode: 'manual', sheetUrl: '', rows: [blankRow(), blankRow()] };
+    return { id: uid('tbl'), title, mode: 'manual', sheetUrl: '', rows: [blankRow('June'), blankRow('July'), totalRow()] };
   }
 
   function newReport() {
@@ -387,9 +400,16 @@
     return div.innerHTML;
   }
 
+  function formatDisplayDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00:00');
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   function reportLabel(r) {
     const name = r.hotelNameBig && r.hotelNameBig.trim() ? r.hotelNameBig.trim() : 'Untitled report';
-    const date = r.reportDate && r.reportDate.trim() ? ' — ' + r.reportDate.trim() : '';
+    const date = r.reportDate && r.reportDate.trim() ? ' — ' + formatDisplayDate(r.reportDate) : '';
     return name + date;
   }
 
@@ -516,18 +536,18 @@
 
     const detailRow = (label, valueHtml) => `
       <tr>
-        <td style="${FF}font-size:14px;font-weight:bold;color:#1a1f27;padding:3px 10px 3px 0;vertical-align:top;white-space:nowrap;">${eesc(label)}</td>
-        <td style="${FF}font-size:14px;color:#1a1f27;padding:3px 0;">${valueHtml}</td>
+        <td width="230" style="${FF}font-size:14px;font-weight:bold;color:#1a1f27;padding:3px 10px 3px 0;vertical-align:top;white-space:nowrap;width:230px;">${eesc(label)}</td>
+        <td style="${FF}font-size:14px;color:#1a1f27;padding:3px 0;text-align:left;">${valueHtml}</td>
       </tr>`;
 
     const detailsTable = `
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;table-layout:fixed;">
         ${detailRow('Campaign:', eesc(r.campaign))}
-        ${detailRow('Campaign Period:', eesc(r.campaignPeriod))}
-        ${detailRow('Campaign End:', eesc(r.campaignEnd))}
+        ${detailRow('Campaign Period:', eesc(formatDisplayDate(r.campaignPeriod)))}
+        ${detailRow('Campaign End:', eesc(formatDisplayDate(r.campaignEnd)))}
         ${detailRow('Period (days):', eesc(r.periodDays))}
         ${detailRow('Budget (USD):', eesc(r.budgetUsd))}
-        ${detailRow('Report Date:', eesc(r.reportDate))}
+        ${detailRow('Report Date:', eesc(formatDisplayDate(r.reportDate)))}
         ${detailRow('Monthly Report and Dashboard:', r.dashboardLinkUrl
           ? `<a href="${escapeHtml(r.dashboardLinkUrl)}" style="color:#1D4ED8;text-decoration:underline;">${eesc(r.dashboardLinkText || 'Open link')}</a>`
           : eesc(r.dashboardLinkText))}
@@ -574,7 +594,7 @@
 <table role="presentation" width="680" cellpadding="0" cellspacing="0" border="0" style="width:680px;max-width:100%;${FF}font-size:14px;color:#1a1f27;">
   <tr><td style="padding:0 0 10px 0;">Dear Khun ${eesc(r.dearName)},</td></tr>
   <tr><td style="padding:0 0 10px 0;">I hope you are doing well.</td></tr>
-  <tr><td style="padding:0 0 18px 0;">Please find below details for ${eesc(r.attributionFor)} attribution report as of ${eesc(r.asOfDate)}.</td></tr>
+  <tr><td style="padding:0 0 18px 0;">Please find below details for ${eesc(r.attributionFor)} attribution report as of ${eesc(formatDisplayDate(r.asOfDate))}.</td></tr>
   <tr><td style="text-align:center;padding:0 0 14px 0;"><span style="font-size:28px;font-weight:bold;${FF}">${eesc(r.hotelNameBig)}</span></td></tr>
   <tr><td style="border-top:2px solid #111827;font-size:1px;line-height:1px;padding:0 0 14px 0;">&nbsp;</td></tr>
   <tr><td style="padding:0 0 8px 0;">${detailsTable}</td></tr>
@@ -615,7 +635,40 @@
     sel.removeAllRanges();
     sel.addRange(range);
     const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-    showToast(`Selected! Now press ${isMac ? 'Cmd' : 'Ctrl'}+C, then paste into Gmail or Outlook.`);
+
+    // Attempt an immediate copy right here, inside the click handler (a genuine
+    // user gesture) — this is the most broadly supported way to trigger a copy.
+    let copied = false;
+    try {
+      copied = document.execCommand('copy');
+    } catch (e) {
+      copied = false;
+    }
+
+    if (copied) {
+      showToast('Copied! Paste directly into Gmail or Outlook.');
+      return;
+    }
+
+    // Fallback: Clipboard API (async, may prompt for permission in some browsers).
+    if (navigator.clipboard && window.ClipboardItem) {
+      try {
+        const html = el.innerHTML;
+        const text = el.textContent || '';
+        navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([text], { type: 'text/plain' })
+        })]).then(() => {
+          showToast('Copied! Paste directly into Gmail or Outlook.');
+        }).catch(() => {
+          showToast(`Selected — press ${isMac ? 'Cmd' : 'Ctrl'}+C now to copy, then paste into Gmail or Outlook.`);
+        });
+        return;
+      } catch (e) {
+        // fall through to manual instruction
+      }
+    }
+    showToast(`Selected — press ${isMac ? 'Cmd' : 'Ctrl'}+C now to copy, then paste into Gmail or Outlook.`);
   }
 
   function actionDownloadEmailHtml() {
@@ -666,10 +719,10 @@
     const previewHtml = showEmailPreview ? `
       <div class="email-preview-wrap">
         <div class="email-preview-instructions">
-          <b>Step 1:</b> click <b>Select All Content</b> below.
-          <b>Step 2:</b> press <b>Ctrl+C</b> (or <b>Cmd+C</b> on Mac) to copy.
+          <b>Step 1:</b> click <b>Select &amp; Copy</b> below (it copies automatically).
+          <b>Step 2:</b> if it didn't say "Copied", press <b>Ctrl+C</b> (or <b>Cmd+C</b> on Mac) instead — the content is already selected.
           <b>Step 3:</b> paste into a new Gmail or Outlook message.
-          <button class="tb-btn primary" id="btn-select-preview" style="margin-left:auto;">Select All Content</button>
+          <button class="tb-btn primary" id="btn-select-preview" style="margin-left:auto;">Select &amp; Copy</button>
         </div>
         <div class="email-preview-frame">
           <div id="email-preview-content">${buildEmailHtml(cur)}</div>
@@ -697,7 +750,7 @@
             Please find below details for
             <input class="line-input wide" data-path="attributionFor" placeholder="e.g. Anantara Veli Maldives Resort" value="${escapeHtml(cur.attributionFor)}" />
             attribution report as of
-            <input class="line-input" data-path="asOfDate" placeholder="31 Jul 2026" value="${escapeHtml(cur.asOfDate)}" />.
+            <input type="date" class="line-input date-input" data-path="asOfDate" value="${escapeHtml(cur.asOfDate)}" />.
           </p>
 
           <div class="hotel-heading-row">
@@ -710,10 +763,10 @@
             <div><input class="line-input xwide" data-path="campaign" value="${escapeHtml(cur.campaign)}" /></div>
 
             <div class="detail-label">Campaign Period:</div>
-            <div><input class="line-input xwide" data-path="campaignPeriod" placeholder="15 Jun 2026" value="${escapeHtml(cur.campaignPeriod)}" /></div>
+            <div><input type="date" class="line-input date-input" data-path="campaignPeriod" value="${escapeHtml(cur.campaignPeriod)}" /></div>
 
             <div class="detail-label">Campaign End:</div>
-            <div><input class="line-input xwide" data-path="campaignEnd" placeholder="15 Sep 2026" value="${escapeHtml(cur.campaignEnd)}" /></div>
+            <div><input type="date" class="line-input date-input" data-path="campaignEnd" value="${escapeHtml(cur.campaignEnd)}" /></div>
 
             <div class="detail-label">Period (days):</div>
             <div><input class="line-input" data-path="periodDays" placeholder="93 days" value="${escapeHtml(cur.periodDays)}" /></div>
@@ -722,7 +775,7 @@
             <div><input class="line-input" data-path="budgetUsd" placeholder="$5,000" value="${escapeHtml(cur.budgetUsd)}" /></div>
 
             <div class="detail-label">Report Date:</div>
-            <div><input class="line-input xwide" data-path="reportDate" placeholder="5 Aug 2026" value="${escapeHtml(cur.reportDate)}" /></div>
+            <div><input type="date" class="line-input date-input" data-path="reportDate" value="${escapeHtml(cur.reportDate)}" /></div>
 
             <div class="detail-label">Monthly Report and Dashboard:</div>
             <div class="link-field-row">
@@ -788,6 +841,7 @@
         </div>
 
         ${t.mode === 'manual' ? `
+          <div class="paste-hint">Tip: copy a range from Excel or Google Sheets and paste into any cell below to fill it all at once.</div>
           <div class="table-scroll">
             <table class="perf">
               <thead>
@@ -902,6 +956,34 @@
         const row = t.rows.find(r => r.id === inp.getAttribute('data-row'));
         row.cells[inp.getAttribute('data-cell')] = e.target.value;
         scheduleSave();
+      });
+
+      inp.addEventListener('paste', (e) => {
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        if (!text || (!text.includes('\t') && !text.includes('\n'))) {
+          return; // plain single value — let the browser paste normally
+        }
+        e.preventDefault();
+
+        const t = cur.tables.find(t => t.id === inp.getAttribute('data-table'));
+        const startRowIdx = t.rows.findIndex(r => r.id === inp.getAttribute('data-row'));
+        const startColIdx = COLUMNS.findIndex(c => c.key === inp.getAttribute('data-cell'));
+        if (startRowIdx === -1 || startColIdx === -1) return;
+
+        const pastedRows = text.replace(/\r/g, '').split('\n').filter((line, idx, arr) => !(idx === arr.length - 1 && line === ''));
+        pastedRows.forEach((line, rOffset) => {
+          const values = line.split('\t');
+          while (t.rows.length <= startRowIdx + rOffset) {
+            t.rows.push(blankRow());
+          }
+          const targetRow = t.rows[startRowIdx + rOffset];
+          values.forEach((val, cOffset) => {
+            const col = COLUMNS[startColIdx + cOffset];
+            if (col) targetRow.cells[col.key] = val.trim();
+          });
+        });
+        scheduleSave();
+        render();
       });
     });
 
