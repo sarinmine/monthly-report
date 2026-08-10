@@ -86,6 +86,19 @@
     background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 7px;
     padding: 6px 10px; font-size: 12.5px; color: #991B1B;
   }
+  .color-bar { margin-bottom: 20px; }
+  .color-preset {
+    display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+    cursor: pointer; padding: 0; width: 36px; height: 22px;
+  }
+  .color-preset.active { outline: 2px solid var(--accent-brand); outline-offset: 1px; }
+  .color-preset span { flex: 1; height: 100%; }
+  .color-pick-label {
+    display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-muted);
+  }
+  .color-pick-label input[type="color"] {
+    width: 28px; height: 22px; border: 1px solid var(--border); border-radius: 5px; padding: 0; cursor: pointer; background: none;
+  }
   .toast-msg {
     background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534;
     border-radius: 7px; padding: 6px 10px; font-size: 12.5px; font-weight: 500;
@@ -188,11 +201,11 @@
   .table-scroll { overflow-x: auto; }
   table.perf { border-collapse: collapse; width: 100%; min-width: 980px; }
   table.perf th {
-    background: var(--header-dark); color: #fff; font-size: 10.5px; letter-spacing: 0.03em;
+    background: var(--row-header-color, var(--header-dark)); color: var(--row-header-text, #fff); font-size: 10.5px; letter-spacing: 0.03em;
     text-transform: uppercase; padding: 8px 7px; text-align: center; white-space: nowrap; font-weight: 600;
   }
   table.perf td { padding: 4px 5px; border: 1px solid var(--border); text-align: center; }
-  table.perf tr.total-row td { background: var(--total-bg); font-weight: 700; }
+  table.perf tr.total-row td { background: var(--row-total-color, var(--total-bg)); font-weight: 700; }
   table.perf input.cell-input {
     width: 100%; min-width: 62px; border: none; background: transparent; text-align: center;
     font-size: 12.5px; padding: 5px 3px; outline: none; font-family: var(--font-body); color: var(--text);
@@ -327,6 +340,8 @@
       reportDate: '',
       dashboardLinkText: '',
       dashboardLinkUrl: '',
+      headerColor: '#1F2937',
+      totalColor: '#FCE9A8',
       tables: [
         blankTable('Overall Performance'),
         blankTable('Channel 1: Display PT'),
@@ -405,6 +420,15 @@
     const d = new Date(iso + 'T00:00:00');
     if (isNaN(d.getTime())) return iso;
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function contrastColor(hex) {
+    if (!hex) return '#ffffff';
+    const h = hex.replace('#', '');
+    if (h.length !== 6) return '#ffffff';
+    const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? '#1a1f27' : '#ffffff';
   }
 
   function reportLabel(r) {
@@ -561,14 +585,17 @@
           : '';
       }
       if (rows.length === 0) return '';
+      const headerBg = r.headerColor || '#1F2937';
+      const headerText = contrastColor(headerBg);
+      const totalBg = r.totalColor || '#FCE9A8';
       return `
         <table role="presentation" cellpadding="6" cellspacing="0" border="1" bordercolor="#E5E7EB" style="border-collapse:collapse;width:100%;margin-bottom:18px;${FF}">
           <tr>
-            ${COLUMNS.map(c => `<td style="background:#1F2937;color:#ffffff;font-size:10.5px;font-weight:bold;text-transform:uppercase;text-align:center;">${eesc(c.label)}</td>`).join('')}
+            ${COLUMNS.map(c => `<td style="background:${headerBg};color:${headerText};font-size:10.5px;font-weight:bold;text-transform:uppercase;text-align:center;white-space:nowrap;padding:8px 7px;">${eesc(c.label)}</td>`).join('')}
           </tr>
           ${rows.map(row => `
-            <tr${row.isTotal ? ' style="background:#FCE9A8;"' : ''}>
-              ${COLUMNS.map(c => `<td style="font-size:12.5px;text-align:center;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;">${eesc(row.cells[c.key])}</td>`).join('')}
+            <tr${row.isTotal ? ` style="background:${totalBg};"` : ''}>
+              ${COLUMNS.map(c => `<td style="font-size:12.5px;text-align:center;white-space:nowrap;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;">${eesc(row.cells[c.key])}</td>`).join('')}
             </tr>`).join('')}
         </table>`;
     };
@@ -716,6 +743,26 @@
       </div>
     `;
 
+    const presets = [
+      { header: '#1F2937', total: '#FCE9A8' },
+      { header: '#1F3A5F', total: '#D9E4F5' },
+      { header: '#0F5132', total: '#D2F4E1' },
+      { header: '#7A1F2B', total: '#F8E1C7' }
+    ];
+    const curHeader = (cur.headerColor || '#1F2937').toLowerCase();
+    const colorBarHtml = `
+      <div class="toolbar color-bar">
+        <div class="toolbar-brand">Table Colors</div>
+        ${presets.map(p => `
+          <button class="color-preset ${curHeader === p.header.toLowerCase() ? 'active' : ''}" data-action="set-preset" data-header="${p.header}" data-total="${p.total}" title="Use this palette">
+            <span style="background:${p.header};"></span><span style="background:${p.total};"></span>
+          </button>
+        `).join('')}
+        <label class="color-pick-label">Header <input type="color" data-path="headerColor" value="${escapeHtml(cur.headerColor || '#1F2937')}" /></label>
+        <label class="color-pick-label">Total Row <input type="color" data-path="totalColor" value="${escapeHtml(cur.totalColor || '#FCE9A8')}" /></label>
+      </div>
+    `;
+
     const previewHtml = showEmailPreview ? `
       <div class="email-preview-wrap">
         <div class="email-preview-instructions">
@@ -730,7 +777,7 @@
       </div>
     ` : '';
 
-    const tablesHtml = cur.tables.map(t => renderTable(t)).join('');
+    const tablesHtml = cur.tables.map(t => renderTable(t, cur)).join('');
 
     const highlightsHtml = renderBulletEditor(cur.keyHighlights, 'keyHighlights');
     const nextStepsHtml = renderBulletEditor(cur.nextSteps, 'nextSteps');
@@ -740,6 +787,7 @@
     app.innerHTML = `
       <div class="wrap">
         ${toolbarHtml}
+        ${colorBarHtml}
         ${previewHtml}
         <div class="paper">
           <p class="salutation">
@@ -816,9 +864,12 @@
     bindEvents();
   }
 
-  function renderTable(t) {
+  function renderTable(t, report) {
+    const headerBg = report.headerColor || '#1F2937';
+    const headerText = contrastColor(headerBg);
+    const totalBg = report.totalColor || '#FCE9A8';
     const rowsHtml = t.rows.map(row => `
-      <tr class="${row.isTotal ? 'total-row' : ''}">
+      <tr class="${row.isTotal ? 'total-row' : ''}" ${row.isTotal ? `style="--row-total-color:${totalBg};"` : ''}>
         ${COLUMNS.map(c => `
           <td><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>
         `).join('')}
@@ -845,7 +896,7 @@
           <div class="table-scroll">
             <table class="perf">
               <thead>
-                <tr>
+                <tr style="--row-header-color:${headerBg};--row-header-text:${headerText};">
                   ${COLUMNS.map(c => `<th>${c.label}</th>`).join('')}
                   <th></th>
                 </tr>
@@ -927,6 +978,10 @@
           const campInp = app.querySelector('input[data-path="campaign"]');
           if (attrInp) attrInp.value = e.target.value;
           if (campInp) campInp.value = e.target.value;
+        }
+        // colors are baked into many inline styles at render time, so re-render
+        if (path === 'headerColor' || path === 'totalColor') {
+          render();
         }
       });
     });
@@ -1010,6 +1065,12 @@
         else if (action === 'set-mode') actionSetTableMode(tableId, btn.getAttribute('data-mode'));
         else if (action === 'add-bullet') actionAddBullet(btn.getAttribute('data-field'));
         else if (action === 'remove-bullet') actionRemoveBullet(btn.getAttribute('data-field'), parseInt(btn.getAttribute('data-idx'), 10));
+        else if (action === 'set-preset') {
+          cur.headerColor = btn.getAttribute('data-header');
+          cur.totalColor = btn.getAttribute('data-total');
+          scheduleSave();
+          render();
+        }
       });
     });
   }
