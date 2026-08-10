@@ -309,6 +309,7 @@
       title: 'Destination Properties',
       headerColor: '#2E3F8F',
       totalColor: '#D9D9D9',
+      rowAccentColor: '#E2EFDA',
       columns: [
         { key: 'month', label: 'Month' },
         { key: 'destination', label: 'Destination / Properties' },
@@ -430,6 +431,7 @@
       columns: tpl.columns,
       headerColor: tpl.headerColor,
       totalColor: tpl.totalColor,
+      rowAccentColor: tpl.rowAccentColor || '',
       rows: tpl.rows(tpl.columns)
     };
   }
@@ -1024,7 +1026,7 @@
     const totalBg = t.totalColor || report.totalColor || '#FCE9A8';
     const tplLabel = (TEMPLATES[t.template] || TEMPLATES.standard).label;
     const rowsHtml = t.rows.map(row => `
-      <tr class="${row.isTotal ? 'total-row' : ''}" ${row.isTotal ? `style="--row-total-color:${totalBg};"` : ''}>
+      <tr class="${row.isTotal ? 'total-row' : ''}" ${row.isTotal ? `style="--row-total-color:${totalBg};"` : (t.rowAccentColor ? `style="background:${t.rowAccentColor};"` : '')}>
         ${cols.map(c => `
           <td><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>
         `).join('')}
