@@ -199,16 +199,16 @@
   .icon-btn:hover { color: var(--danger); border-color: #FCA5A5; background: #FEF2F2; }
 
   .table-scroll { overflow-x: auto; }
-  table.perf { border-collapse: collapse; width: 100%; min-width: 980px; }
+  table.perf { border-collapse: collapse; width: 100%; min-width: 1240px; }
   table.perf th {
-    background: var(--row-header-color, var(--header-dark)); color: var(--row-header-text, #fff); font-size: 10.5px; letter-spacing: 0.03em;
-    text-transform: uppercase; padding: 8px 7px; text-align: center; white-space: nowrap; font-weight: 600;
+    background: var(--row-header-color, var(--header-dark)); color: var(--row-header-text, #fff); font-size: 11.5px; letter-spacing: 0.03em;
+    text-transform: uppercase; padding: 12px 16px; text-align: center; white-space: nowrap; font-weight: 600;
   }
-  table.perf td { padding: 4px 5px; border: 1px solid var(--border); text-align: center; }
+  table.perf td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; }
   table.perf tr.total-row td { background: var(--row-total-color, var(--total-bg)); font-weight: 700; }
   table.perf input.cell-input {
-    width: 100%; min-width: 62px; border: none; background: transparent; text-align: center;
-    font-size: 12.5px; padding: 5px 3px; outline: none; font-family: var(--font-body); color: var(--text);
+    width: 100%; min-width: 90px; border: none; background: transparent; text-align: center;
+    font-size: 13.5px; padding: 8px 6px; outline: none; font-family: var(--font-body); color: var(--text);
   }
   table.perf input.cell-input:focus { background: #EEF2F7; border-radius: 3px; }
   td.row-actions { border: none; padding: 4px 6px; white-space: nowrap; }
@@ -589,13 +589,13 @@
       const headerText = contrastColor(headerBg);
       const totalBg = r.totalColor || '#FCE9A8';
       return `
-        <table role="presentation" cellpadding="6" cellspacing="0" border="1" bordercolor="#E5E7EB" style="border-collapse:collapse;width:100%;margin-bottom:18px;${FF}">
+        <table role="presentation" cellpadding="12" cellspacing="0" border="1" bordercolor="#E5E7EB" style="border-collapse:collapse;width:100%;margin-bottom:18px;${FF}">
           <tr>
-            ${COLUMNS.map(c => `<td style="background:${headerBg};color:${headerText};font-size:10.5px;font-weight:bold;text-transform:uppercase;text-align:center;white-space:nowrap;padding:8px 7px;">${eesc(c.label)}</td>`).join('')}
+            ${COLUMNS.map(c => `<td style="background:${headerBg};color:${headerText};font-size:11.5px;font-weight:bold;text-transform:uppercase;text-align:center;white-space:nowrap;padding:12px 16px;">${eesc(c.label)}</td>`).join('')}
           </tr>
           ${rows.map(row => `
             <tr${row.isTotal ? ` style="background:${totalBg};"` : ''}>
-              ${COLUMNS.map(c => `<td style="font-size:12.5px;text-align:center;white-space:nowrap;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;">${eesc(row.cells[c.key])}</td>`).join('')}
+              ${COLUMNS.map(c => `<td style="font-size:13.5px;text-align:center;white-space:nowrap;padding:10px 14px;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;">${eesc(row.cells[c.key])}</td>`).join('')}
             </tr>`).join('')}
         </table>`;
     };
