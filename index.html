@@ -198,10 +198,13 @@
 
   .table-scroll { overflow-x: auto; }
   table.perf { border-collapse: collapse; width: 100%; min-width: 900px; }
-  table.perf.fixed-cols { table-layout: fixed; }
+  table.perf.fixed-cols { table-layout: fixed; min-width: 1320px; }
   table.perf th {
     background: var(--row-header-color, var(--header-dark)); color: var(--row-header-text, #fff); font-size: 11.5px; letter-spacing: 0.03em;
-    text-transform: uppercase; padding: 12px 16px; text-align: center; white-space: nowrap; font-weight: 600;
+    text-transform: uppercase; padding: 12px 10px; text-align: center; white-space: nowrap; font-weight: 600;
+  }
+  table.perf.fixed-cols th {
+    white-space: normal; word-break: break-word; line-height: 1.3; padding: 10px 6px; font-size: 10.5px;
   }
   table.perf td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; vertical-align: middle; }
   table.perf tr.total-row td { background: var(--row-total-color, var(--total-bg)); font-weight: 700; }
@@ -897,7 +900,7 @@
       return `
         <table role="presentation" cellpadding="12" cellspacing="0" border="1" bordercolor="#E5E7EB" style="${tableStyle}${FF}">
           <tr>
-            ${cols.map(c => `<td style="${c.width ? `width:${c.width}px;` : ''}background:${headerBg};color:${headerText};font-size:11.5px;font-weight:bold;text-transform:uppercase;text-align:center;white-space:nowrap;padding:12px 16px;">${eesc(c.label)}</td>`).join('')}
+            ${cols.map(c => `<td style="${c.width ? `width:${c.width}px;` : ''}background:${headerBg};color:${headerText};font-size:${c.width ? '10px' : '11.5px'};font-weight:bold;text-transform:uppercase;text-align:center;${c.width ? 'white-space:normal;word-break:break-word;line-height:1.3;' : 'white-space:nowrap;'}padding:${c.width ? '10px 6px' : '12px 16px'};">${eesc(c.label)}</td>`).join('')}
           </tr>
           ${rows.map((row, rIdx) => {
             let rowBg = '';
