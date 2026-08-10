@@ -4,10 +4,10 @@
   :root {
     --bg: #F3F4F6;
     --paper: #FFFFFF;
-    --accent-brand: #1F3A5F;
-    --accent-brand-dim: #4A5F7A;
-    --header-dark: #1F2937;
-    --total-bg: #FCE9A8;
+    --accent-brand: #1D6FE0;
+    --accent-brand-dim: #5B92D9;
+    --header-dark: #1F2A44;
+    --total-bg: #DDE3F6;
     --border: #E5E7EB;
     --border-strong: #111827;
     --text: #1A1F27;
@@ -31,6 +31,16 @@
   }
 
   .wrap { max-width: 980px; margin: 0 auto; }
+
+  /* ---------- Tab bar ---------- */
+  .tab-bar { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tab-btn {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px 8px 0 0;
+    padding: 10px 18px; font-size: 13.5px; font-weight: 600; color: var(--text-muted);
+    cursor: pointer; font-family: var(--font-body); border-bottom: 3px solid transparent;
+  }
+  .tab-btn.active { color: var(--accent-brand); border-bottom-color: var(--accent-brand); background: #fff; }
+  .tab-btn:hover { color: var(--accent-brand); }
 
   /* ---------- Toolbar ---------- */
   .toolbar {
@@ -86,19 +96,6 @@
     background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 7px;
     padding: 6px 10px; font-size: 12.5px; color: #991B1B;
   }
-  .color-bar { margin-bottom: 20px; }
-  .color-preset {
-    display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
-    cursor: pointer; padding: 0; width: 36px; height: 22px;
-  }
-  .color-preset.active { outline: 2px solid var(--accent-brand); outline-offset: 1px; }
-  .color-preset span { flex: 1; height: 100%; }
-  .color-pick-label {
-    display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-muted);
-  }
-  .color-pick-label input[type="color"] {
-    width: 28px; height: 22px; border: 1px solid var(--border); border-radius: 5px; padding: 0; cursor: pointer; background: none;
-  }
   .toast-msg {
     background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534;
     border-radius: 7px; padding: 6px 10px; font-size: 12.5px; font-weight: 500;
@@ -131,7 +128,7 @@
     padding: 48px 56px;
   }
 
-  .line-input {
+  .line-input, select.line-input {
     border: none;
     border-bottom: 1px dashed #C7CDD6;
     background: transparent;
@@ -142,13 +139,14 @@
     outline: none;
     min-width: 80px;
   }
-  .line-input:focus { border-bottom-color: var(--accent-brand); }
+  .line-input:focus, select.line-input:focus { border-bottom-color: var(--accent-brand); }
   .line-input[readonly] { color: var(--text-muted); cursor: default; }
   .line-input.wide { min-width: 220px; }
   .line-input.xwide { min-width: 320px; }
   .line-input.date-input { min-width: 150px; font-family: var(--font-body); color: var(--text); }
   .line-input.date-input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; }
   .line-input.date-input:hover::-webkit-calendar-picker-indicator { opacity: 1; }
+  select.currency-select { min-width: 70px; margin-right: 6px; cursor: pointer; }
 
   p.salutation { font-size: 14px; margin: 0 0 10px; line-height: 1.7; }
 
@@ -188,11 +186,10 @@
     background: transparent; padding: 2px 3px; outline: none; flex: 1; min-width: 180px;
   }
   input.table-title-input:focus { border-bottom-color: var(--accent-brand); }
-  .mode-toggle { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .mode-toggle button {
-    background: #fff; border: none; font-size: 11.5px; padding: 6px 9px; cursor: pointer; color: var(--text-muted); font-family: var(--font-body);
+  .tpl-badge {
+    font-size: 11px; font-weight: 600; color: var(--accent-brand); background: #EAF3FD;
+    border-radius: 5px; padding: 4px 8px;
   }
-  .mode-toggle button.active { background: var(--accent-brand); color: #fff; }
   .icon-btn {
     background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted);
     cursor: pointer; font-size: 12px; padding: 5px 8px; font-family: var(--font-body);
@@ -200,7 +197,8 @@
   .icon-btn:hover { color: var(--danger); border-color: #FCA5A5; background: #FEF2F2; }
 
   .table-scroll { overflow-x: auto; }
-  table.perf { border-collapse: collapse; width: 100%; min-width: 1240px; }
+  table.perf { border-collapse: collapse; width: 100%; min-width: 900px; }
+  table.perf.fixed-cols { table-layout: fixed; }
   table.perf th {
     background: var(--row-header-color, var(--header-dark)); color: var(--row-header-text, #fff); font-size: 11.5px; letter-spacing: 0.03em;
     text-transform: uppercase; padding: 12px 16px; text-align: center; white-space: nowrap; font-weight: 600;
@@ -208,8 +206,8 @@
   table.perf td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; vertical-align: middle; }
   table.perf tr.total-row td { background: var(--row-total-color, var(--total-bg)); font-weight: 700; }
   table.perf input.cell-input {
-    width: 100%; min-width: 90px; border: none; background: transparent; text-align: center;
-    font-size: 13.5px; padding: 8px 6px; outline: none; font-family: var(--font-body); color: var(--text);
+    width: 100%; min-width: 60px; border: none; background: transparent; text-align: center;
+    font-size: 13.5px; padding: 8px 4px; outline: none; font-family: var(--font-body); color: var(--text);
   }
   table.perf input.cell-input:focus { background: #EEF2F7; border-radius: 3px; }
   td.row-actions { border: none; padding: 4px 6px; white-space: nowrap; }
@@ -219,35 +217,25 @@
   .row-btn:hover { color: var(--danger); }
   .row-btn.total-toggle.active { color: #B8860B; font-weight: 700; }
 
-  .sheet-link-box {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: #fff;
-    border: 1px dashed var(--border); border-radius: 7px; padding: 12px;
-  }
-  .sheet-link-box .line-input { flex: 1; min-width: 220px; }
-  .sheet-link-box a {
-    color: #1D4ED8; text-decoration: underline; font-size: 13px; white-space: nowrap;
-  }
-
   .add-row-btn, .add-table-btn {
     background: #fff; border: 1px dashed var(--border); border-radius: 6px; color: var(--accent-brand);
     font-size: 12.5px; font-weight: 600; padding: 7px 12px; cursor: pointer; font-family: var(--font-body);
   }
   .add-row-btn:hover, .add-table-btn:hover { background: #EEF2F7; }
   .add-table-btn { display: block; margin: 0 auto 24px; }
-  .paste-hint { font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
 
-  .paste-box {
-    background: #fff; border: 1px solid var(--accent-brand); border-radius: 7px;
-    padding: 12px; margin-bottom: 10px;
+  .template-picker {
+    border: 1px dashed var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px; background: #FAFBFC; text-align: center;
   }
-  .paste-box-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-  .paste-box textarea {
-    width: 100%; min-height: 90px; border: 1px solid var(--border); border-radius: 6px;
-    padding: 8px; font-family: var(--font-mono); font-size: 12.5px; color: var(--text);
-    resize: vertical; outline: none;
+  .template-picker-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+  .template-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 12px; }
+  .template-option {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; background: #fff;
+    border: 1px solid var(--border); border-radius: 7px; padding: 10px 14px; cursor: pointer; font-family: var(--font-body);
   }
-  .paste-box textarea:focus { border-color: var(--accent-brand); }
-  .paste-box-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .template-option:hover { border-color: var(--accent-brand); }
+  .tpl-swatch { width: 34px; height: 14px; border-radius: 3px; }
+  .tpl-name { font-size: 12px; font-weight: 600; color: var(--text); }
 
   /* ---------- Summary / bullets ---------- */
   .summary-heading { font-size: 15px; font-weight: 700; margin: 26px 0 8px; }
@@ -257,6 +245,10 @@
   .bullet-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
   .bullet-row .line-input { flex: 1; }
   .bullet-row .row-btn { flex-shrink: 0; }
+
+  .dest-summary-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .dest-summary-row b { min-width: 90px; flex-shrink: 0; font-size: 14px; }
+  .dest-summary-row .line-input { flex: 1; }
 
   .note-box {
     background: #FEF9E7; border: 1px solid #F5E6A8; border-radius: 6px; padding: 10px 12px;
@@ -271,7 +263,7 @@
     body * { visibility: hidden; }
     #app, #app * { visibility: visible; }
     #app { background: #fff; padding: 0; }
-    .toolbar, .mode-toggle, .icon-btn, .add-row-btn, .add-table-btn, .row-btn, td.row-actions, .sheet-link-box a.hint, .email-preview-wrap { display: none !important; }
+    .toolbar, .tab-bar, .icon-btn, .add-row-btn, .add-table-btn, .row-btn, td.row-actions, .email-preview-wrap { display: none !important; }
     .paper { box-shadow: none; border: none; padding: 0; }
     .line-input, input.hotel-heading, input.table-title-input, table.perf input.cell-input {
       border: none !important; background: transparent !important;
@@ -289,8 +281,38 @@
 
 <script>
 (function () {
-  const STORAGE_KEY = 'monthly_reports';
   const app = document.getElementById('app');
+
+  const STORAGE_KEYS = {
+    direct: 'monthly_reports_direct',
+    minor: 'monthly_reports_minor',
+    corporate: 'monthly_reports_corporate'
+  };
+  const TAB_LABELS = {
+    direct: 'Direct Template',
+    minor: 'Minor Properties Template',
+    corporate: 'Minor Corporate Template'
+  };
+  const TAB_TEMPLATE_KEYS = {
+    direct: ['branding', 'conversion'],
+    minor: ['standard'],
+    corporate: ['destination']
+  };
+  const CURRENCIES = ['USD', 'THB', 'EUR', 'GBP', 'SGD', 'AUD', 'CNY', 'JPY'];
+  const DEST_LABELS = [
+    { key: 'thailand', label: 'Thailand' },
+    { key: 'china', label: 'China' },
+    { key: 'maldives', label: 'Maldives' },
+    { key: 'vietnam', label: 'Vietnam' },
+    { key: 'srilanka', label: 'Sri Lanka' },
+    { key: 'restOfAsia', label: 'Rest of Asia' }
+  ];
+
+  // unified brand color — all tables share this, no per-table color picker
+  const FIXED_HEADER_COLOR = '#1F2A44';
+  const FIXED_TOTAL_COLOR = '#DDE3F6';
+  const FIXED_ACCENT_COLOR = '#EAF3FD';
+  const FIXED_STRIPE_COLOR = '#F8FAFC';
 
   const DEFAULT_COLUMNS = [
     { key: 'month', label: 'Month' },
@@ -312,17 +334,17 @@
     standard: {
       label: 'Standard Performance',
       title: 'New Channel Table',
-      headerColor: '#1F2937',
-      totalColor: '#FCE9A8',
+      headerColor: FIXED_HEADER_COLOR,
+      totalColor: FIXED_TOTAL_COLOR,
       columns: DEFAULT_COLUMNS,
       rows: (cols) => [rowWith(cols, { month: 'June' }), rowWith(cols, { month: 'July' }), totalRowWith(cols, { month: 'TOTAL' })]
     },
     destination: {
       label: 'Destination Properties',
       title: 'Destination Properties',
-      headerColor: '#2E3F8F',
-      totalColor: '#D9D9D9',
-      rowAccentColor: '#E2EFDA',
+      headerColor: FIXED_HEADER_COLOR,
+      totalColor: FIXED_TOTAL_COLOR,
+      rowAccentColor: FIXED_ACCENT_COLOR,
       columns: [
         { key: 'month', label: 'Month', merge: true },
         { key: 'destination', label: 'Destination / Properties' },
@@ -345,22 +367,23 @@
     branding: {
       label: 'Branding Metrics',
       title: 'Branding',
-      headerColor: '#808080',
-      totalColor: '#9CA3AF',
+      headerColor: FIXED_HEADER_COLOR,
+      totalColor: FIXED_TOTAL_COLOR,
+      fixedWidths: true,
       columns: [
-        { key: 'month', label: 'Month' },
-        { key: 'spending', label: 'Spending' },
-        { key: 'impressions', label: 'Impressions' },
-        { key: 'cpm', label: 'CPM' },
-        { key: 'clicks', label: 'Clicks' },
-        { key: 'cpc', label: 'CPC' },
-        { key: 'ctr', label: 'CTR' },
-        { key: 'newUsers', label: 'New Users' },
-        { key: 'returningUsers', label: 'Returning Users' },
-        { key: 'sessions', label: 'Sessions' },
-        { key: 'engagedSessions', label: 'Engaged Sessions' },
-        { key: 'engagementRate', label: 'Engagement Rate' },
-        { key: 'avgEngagementTime', label: 'Avg. Engagement Time / Session (Sec)' }
+        { key: 'month', label: 'Month', width: 90 },
+        { key: 'spending', label: 'Spending', width: 90 },
+        { key: 'impressions', label: 'Impressions', width: 90 },
+        { key: 'cpm', label: 'CPM', width: 90 },
+        { key: 'clicks', label: 'Clicks', width: 90 },
+        { key: 'cpc', label: 'CPC', width: 90 },
+        { key: 'ctr', label: 'CTR', width: 90 },
+        { key: 'newUsers', label: 'New Users', width: 90 },
+        { key: 'returningUsers', label: 'Returning Users', width: 100 },
+        { key: 'sessions', label: 'Sessions', width: 100 },
+        { key: 'engagedSessions', label: 'Engaged Sessions', width: 100 },
+        { key: 'engagementRate', label: 'Engagement Rate', width: 100 },
+        { key: 'avgEngagementTime', label: 'Avg. Engagement Time / Session (Sec)', width: 200 }
       ],
       rows: (cols) => [
         ...['January', 'February', 'March', 'April', 'May', 'June', 'July'].map(m => rowWith(cols, { month: m })),
@@ -370,23 +393,24 @@
     conversion: {
       label: 'Conversion Metrics',
       title: 'Conversion (Actual Booking & Revenue based on Attribution Report)',
-      headerColor: '#1F3A5F',
-      totalColor: '#FCE9A8',
+      headerColor: FIXED_HEADER_COLOR,
+      totalColor: FIXED_TOTAL_COLOR,
+      fixedWidths: true,
       columns: [
-        { key: 'month', label: 'Month' },
-        { key: 'spending', label: 'Spending' },
-        { key: 'impressions', label: 'Impressions' },
-        { key: 'cpm', label: 'CPM' },
-        { key: 'clicks', label: 'Clicks' },
-        { key: 'cpc', label: 'CPC' },
-        { key: 'ctr', label: 'CTR' },
-        { key: 'bookings', label: 'Bookings' },
-        { key: 'cpa', label: 'CPA' },
-        { key: 'cvr', label: 'CVR' },
-        { key: 'abv', label: 'ABV' },
-        { key: 'revenue', label: 'Revenue' },
-        { key: 'roomNights', label: 'Room Nights' },
-        { key: 'roas', label: 'ROAS' }
+        { key: 'month', label: 'Month', width: 90 },
+        { key: 'spending', label: 'Spending', width: 90 },
+        { key: 'impressions', label: 'Impressions', width: 90 },
+        { key: 'cpm', label: 'CPM', width: 90 },
+        { key: 'clicks', label: 'Clicks', width: 90 },
+        { key: 'cpc', label: 'CPC', width: 90 },
+        { key: 'ctr', label: 'CTR', width: 90 },
+        { key: 'bookings', label: 'Bookings', width: 90 },
+        { key: 'cpa', label: 'CPA', width: 100 },
+        { key: 'cvr', label: 'CVR', width: 100 },
+        { key: 'abv', label: 'ABV', width: 100 },
+        { key: 'revenue', label: 'Revenue', width: 100 },
+        { key: 'roomNights', label: 'Room Nights', width: 100 },
+        { key: 'roas', label: 'ROAS', width: 100 }
       ],
       rows: (cols) => [
         ...['January', 'February', 'March', 'April', 'May', 'June', 'July'].map(m => rowWith(cols, { month: m })),
@@ -395,16 +419,18 @@
     }
   };
 
-  let reports = [];
-  let currentId = null;
+  let reportsByTab = { direct: [], minor: [], corporate: [] };
+  let currentIdByTab = { direct: null, minor: null, corporate: null };
+  let undoStackByTab = { direct: [], minor: [], corporate: [] };
+  let activeTab = 'direct';
   let loaded = false;
   let pendingDeleteReport = false;
   let saveTimer = null;
-  let toastMsg = null; // { text, isError }
+  let toastMsg = null;
   let toastTimer = null;
   let showEmailPreview = false;
   let showTemplatePicker = false;
-  let openPasteTables = new Set();
+  let pendingUndoSnapshot = null;
 
   function uid(prefix) {
     return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -439,20 +465,27 @@
     return {
       id: uid('tbl'),
       title: title || tpl.title,
-      mode: 'manual',
-      sheetUrl: '',
       template: templateKey || 'standard',
       columns: tpl.columns,
       headerColor: tpl.headerColor,
       totalColor: tpl.totalColor,
       rowAccentColor: tpl.rowAccentColor || '',
+      fixedWidths: !!tpl.fixedWidths,
       rows: tpl.rows(tpl.columns)
     };
   }
 
-  function newReport() {
-    return {
+  function defaultTablesForTab(tabKey) {
+    if (tabKey === 'direct') return [blankTable('Branding', 'branding'), blankTable('Conversion (Actual Booking & Revenue based on Attribution Report)', 'conversion')];
+    if (tabKey === 'minor') return [blankTable('Overall Performance', 'standard'), blankTable('Channel 1: Display PT', 'standard')];
+    if (tabKey === 'corporate') return [blankTable('Destination Properties', 'destination')];
+    return [blankTable(null, 'standard')];
+  }
+
+  function newReport(tabKey) {
+    const base = {
       id: uid('rep'),
+      tabType: tabKey,
       dearName: '',
       attributionFor: '',
       asOfDate: '',
@@ -461,28 +494,31 @@
       campaignPeriod: '',
       campaignEnd: '',
       periodDays: '',
-      budgetUsd: '',
+      budgetAmount: '',
+      budgetCurrency: 'USD',
       reportDate: '',
       dashboardLinkText: '',
       dashboardLinkUrl: '',
-      headerColor: '#1F2937',
-      totalColor: '#FCE9A8',
-      tables: [
-        blankTable('Overall Performance', 'standard'),
-        blankTable('Channel 1: Display PT', 'standard'),
-        blankTable('Channel 2: Display RT', 'standard')
-      ],
+      tables: defaultTablesForTab(tabKey),
       summaryMonth: '',
       monthRevenue: '',
       allTimeRevenue: '',
       keyHighlights: [''],
-      nextSteps: ['']
+      nextSteps: [''],
+      others: ['']
     };
+    if (tabKey === 'corporate') {
+      base.perfSummaryMonth = '';
+      base.perfSummaryBullets = [''];
+      base.destSummaries = { thailand: '', china: '', maldives: '', vietnam: '', srilanka: '', restOfAsia: '' };
+      base.brandSummaryNote = '';
+      base.brandBullets = [''];
+    }
+    return base;
   }
 
-  function getReport() {
-    return reports.find(r => r.id === currentId) || null;
-  }
+  function currentReports() { return reportsByTab[activeTab]; }
+  function getReport() { return currentReports().find(r => r.id === currentIdByTab[activeTab]) || null; }
 
   function getPath(obj, path) {
     const parts = path.split('.');
@@ -506,17 +542,18 @@
   }
 
   async function loadData() {
-    try {
-      const result = await window.storage.get(STORAGE_KEY, true);
-      reports = result ? JSON.parse(result.value) : [];
-    } catch (e) {
-      reports = [];
+    for (const key of Object.keys(STORAGE_KEYS)) {
+      try {
+        const result = await window.storage.get(STORAGE_KEYS[key], true);
+        reportsByTab[key] = result ? JSON.parse(result.value) : [];
+      } catch (e) {
+        reportsByTab[key] = [];
+      }
+      if (!reportsByTab[key] || reportsByTab[key].length === 0) {
+        reportsByTab[key] = [newReport(key)];
+      }
+      currentIdByTab[key] = reportsByTab[key][0].id;
     }
-    if (reports.length === 0) {
-      const r = newReport();
-      reports.push(r);
-    }
-    currentId = reports[0].id;
     loaded = true;
     render();
   }
@@ -528,7 +565,7 @@
 
   async function saveData() {
     try {
-      await window.storage.set(STORAGE_KEY, JSON.stringify(reports), true);
+      await window.storage.set(STORAGE_KEYS[activeTab], JSON.stringify(reportsByTab[activeTab]), true);
     } catch (e) {
       // best-effort; ignore
     }
@@ -553,7 +590,7 @@
     const end = new Date(endIso + 'T00:00:00');
     if (isNaN(start.getTime()) || isNaN(end.getTime())) return '';
     const MS_PER_DAY = 24 * 60 * 60 * 1000;
-    const diffDays = Math.round((end.getTime() - start.getTime()) / MS_PER_DAY) + 1; // inclusive of both start and end date
+    const diffDays = Math.round((end.getTime() - start.getTime()) / MS_PER_DAY) + 1;
     if (diffDays <= 0) return '';
     return diffDays + (diffDays === 1 ? ' day' : ' days');
   }
@@ -573,32 +610,79 @@
     return name + date;
   }
 
-  /* ---------- Actions that change structure (trigger full render) ---------- */
-  function actionNewReport() {
-    const r = newReport();
-    reports.unshift(r);
-    currentId = r.id;
-    pendingDeleteReport = false;
+  /* ---------- Undo ---------- */
+  function pushUndoSnapshot() {
+    const snap = JSON.stringify({ reports: reportsByTab[activeTab], currentId: currentIdByTab[activeTab] });
+    const stack = undoStackByTab[activeTab];
+    stack.push(snap);
+    if (stack.length > 50) stack.shift();
+  }
+
+  function performUndo() {
+    const stack = undoStackByTab[activeTab];
+    if (!stack || stack.length === 0) {
+      showToast('Nothing to undo', true);
+      return;
+    }
+    const snap = stack.pop();
+    const data = JSON.parse(snap);
+    reportsByTab[activeTab] = data.reports;
+    currentIdByTab[activeTab] = data.currentId;
+    pendingUndoSnapshot = null;
     scheduleSave();
     render();
   }
 
-  function actionDuplicateReport() {
-    const cur = getReport();
-    if (!cur) return;
-    const copy = JSON.parse(JSON.stringify(cur));
-    copy.id = uid('rep');
-    copy.hotelNameBig = (cur.hotelNameBig || '') + ' (copy)';
-    copy.tables.forEach(t => { t.id = uid('tbl'); t.rows.forEach(row => row.id = uid('row')); });
-    reports.unshift(copy);
-    currentId = copy.id;
+  document.addEventListener('keydown', (e) => {
+    const key = (e.key || '').toLowerCase();
+    const modifierPressed = e.metaKey || e.ctrlKey;
+    if (modifierPressed && key === 'z' && !e.shiftKey) {
+      e.preventDefault();
+      performUndo();
+    }
+  });
+
+  document.addEventListener('focusin', (e) => {
+    if (!app.contains(e.target)) return;
+    if (e.target.matches && e.target.matches('input, textarea, select')) {
+      if (pendingUndoSnapshot === null) {
+        pendingUndoSnapshot = JSON.stringify({ reports: reportsByTab[activeTab], currentId: currentIdByTab[activeTab] });
+      }
+    }
+  });
+  document.addEventListener('focusout', (e) => {
+    if (!app.contains(e.target)) return;
+    if (e.target.matches && e.target.matches('input, textarea, select') && pendingUndoSnapshot !== null) {
+      const stack = undoStackByTab[activeTab];
+      stack.push(pendingUndoSnapshot);
+      if (stack.length > 50) stack.shift();
+      pendingUndoSnapshot = null;
+    }
+  });
+
+  /* ---------- Tab switching ---------- */
+  function actionSwitchTab(tabKey) {
+    if (tabKey === activeTab) return;
+    activeTab = tabKey;
+    pendingDeleteReport = false;
+    showTemplatePicker = false;
+    showEmailPreview = false;
+    render();
+  }
+
+  /* ---------- Actions that change structure (trigger full render) ---------- */
+  function actionNewReport() {
+    pushUndoSnapshot();
+    const r = newReport(activeTab);
+    reportsByTab[activeTab].unshift(r);
+    currentIdByTab[activeTab] = r.id;
     pendingDeleteReport = false;
     scheduleSave();
     render();
   }
 
   function actionSelectReport(id) {
-    currentId = id;
+    currentIdByTab[activeTab] = id;
     pendingDeleteReport = false;
     render();
   }
@@ -612,9 +696,10 @@
     render();
   }
   function actionConfirmDelete() {
-    reports = reports.filter(r => r.id !== currentId);
-    if (reports.length === 0) reports.push(newReport());
-    currentId = reports[0].id;
+    pushUndoSnapshot();
+    reportsByTab[activeTab] = reportsByTab[activeTab].filter(r => r.id !== currentIdByTab[activeTab]);
+    if (reportsByTab[activeTab].length === 0) reportsByTab[activeTab].push(newReport(activeTab));
+    currentIdByTab[activeTab] = reportsByTab[activeTab][0].id;
     pendingDeleteReport = false;
     scheduleSave();
     render();
@@ -629,6 +714,7 @@
     render();
   }
   function actionAddTable(templateKey) {
+    pushUndoSnapshot();
     const cur = getReport();
     cur.tables.push(blankTable(null, templateKey));
     showTemplatePicker = false;
@@ -636,66 +722,14 @@
     render();
   }
   function actionRemoveTable(tableId) {
+    pushUndoSnapshot();
     const cur = getReport();
     cur.tables = cur.tables.filter(t => t.id !== tableId);
     scheduleSave();
     render();
   }
-  function actionTogglePasteBox(tableId) {
-    if (openPasteTables.has(tableId)) openPasteTables.delete(tableId);
-    else openPasteTables.add(tableId);
-    render();
-  }
-  function actionCancelPasteBox(tableId) {
-    openPasteTables.delete(tableId);
-    render();
-  }
-  function actionApplyPasteBox(tableId) {
-    const cur = getReport();
-    const t = cur.tables.find(t => t.id === tableId);
-    if (!t) return;
-    const textarea = app.querySelector(`textarea[data-paste-table="${tableId}"]`);
-    if (!textarea) return;
-    const raw = textarea.value;
-    if (!raw || !raw.trim()) {
-      openPasteTables.delete(tableId);
-      render();
-      return;
-    }
-    const cols = tableColumns(t);
-    let lines = raw.replace(/\r/g, '').split('\n').filter((line, idx, arr) => !(idx === arr.length - 1 && line.trim() === ''));
-    if (lines.length === 0) return;
-
-    // detect + skip a pasted header row (first cell matches the first column's label, case-insensitive)
-    const firstLineFirstCell = (lines[0].split('\t')[0] || '').trim().toLowerCase();
-    if (cols.length && firstLineFirstCell === cols[0].label.trim().toLowerCase()) {
-      lines = lines.slice(1);
-    }
-
-    lines.forEach((line, rIdx) => {
-      const values = line.split('\t');
-      while (t.rows.length <= rIdx) {
-        t.rows.push(blankRow(cols));
-      }
-      const targetRow = t.rows[rIdx];
-      values.forEach((val, cIdx) => {
-        const col = cols[cIdx];
-        if (col) targetRow.cells[col.key] = val.trim();
-      });
-    });
-
-    openPasteTables.delete(tableId);
-    scheduleSave();
-    render();
-  }
-  function actionSetTableMode(tableId, mode) {
-    const cur = getReport();
-    const t = cur.tables.find(t => t.id === tableId);
-    t.mode = mode;
-    scheduleSave();
-    render();
-  }
   function actionAddRow(tableId) {
+    pushUndoSnapshot();
     const cur = getReport();
     const t = cur.tables.find(t => t.id === tableId);
     const newRow = blankRow(tableColumns(t));
@@ -706,6 +740,7 @@
     render();
   }
   function actionRemoveRow(tableId, rowId) {
+    pushUndoSnapshot();
     const cur = getReport();
     const t = cur.tables.find(t => t.id === tableId);
     t.rows = t.rows.filter(r => r.id !== rowId);
@@ -713,6 +748,7 @@
     render();
   }
   function actionToggleTotal(tableId, rowId) {
+    pushUndoSnapshot();
     const cur = getReport();
     const t = cur.tables.find(t => t.id === tableId);
     const row = t.rows.find(r => r.id === rowId);
@@ -721,15 +757,8 @@
     render();
   }
 
-  function actionSetTableColor(tableId, field, value) {
-    const cur = getReport();
-    const t = cur.tables.find(t => t.id === tableId);
-    t[field] = value;
-    scheduleSave();
-    render();
-  }
-
   function actionAddBullet(field) {
+    pushUndoSnapshot();
     const cur = getReport();
     if (cur[field].length >= 6) return;
     cur[field].push('');
@@ -737,14 +766,11 @@
     render();
   }
   function actionRemoveBullet(field, idx) {
+    pushUndoSnapshot();
     const cur = getReport();
     cur[field].splice(idx, 1);
     scheduleSave();
     render();
-  }
-
-  function actionPrint() {
-    window.print();
   }
 
   function showToast(text, isError) {
@@ -754,12 +780,71 @@
     render();
   }
 
+  /* ---------- JSON export / import ---------- */
+  function actionExportJson() {
+    const cur = getReport();
+    if (!cur) return;
+    const data = JSON.stringify(cur, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (cur.hotelNameBig || 'report').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-' + activeTab + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Exported JSON file.');
+  }
+
+  function actionTriggerUpload() {
+    const inp = document.getElementById('json-upload-input');
+    if (inp) inp.click();
+  }
+
+  function actionHandleUploadFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        const items = Array.isArray(parsed) ? parsed : [parsed];
+        pushUndoSnapshot();
+        items.forEach(item => {
+          item.id = uid('rep');
+          item.tabType = activeTab;
+          if (item.tables) {
+            item.tables.forEach(t => {
+              t.id = uid('tbl');
+              if (t.rows) t.rows.forEach(row => row.id = uid('row'));
+            });
+          }
+          reportsByTab[activeTab].unshift(item);
+        });
+        currentIdByTab[activeTab] = reportsByTab[activeTab][0].id;
+        scheduleSave();
+        showToast('Imported ' + items.length + ' report(s).');
+        render();
+      } catch (err) {
+        showToast('Invalid JSON file.', true);
+      }
+    };
+    reader.readAsText(file);
+  }
+
   /* ---------- Email-safe export (Gmail / Outlook) ---------- */
   function eesc(str) { return escapeHtml(str).replace(/\n/g, '<br>'); }
+
+  function bulletList(arr, FF) {
+    const items = (arr || []).filter(v => v && v.trim() !== '');
+    if (items.length === 0) return '';
+    return `<ul style="${FF}font-size:14px;color:#1a1f27;margin:0 0 6px;padding-left:20px;">${items.map(v => `<li style="margin-bottom:5px;line-height:1.6;">${eesc(v)}</li>`).join('')}</ul>`;
+  }
 
   function buildEmailHtml(r) {
     const FF = "font-family:Arial,Helvetica,sans-serif;";
     const summaryMonthLabel = r.summaryMonth && r.summaryMonth.trim() ? r.summaryMonth.trim() : '';
+    const budgetDisplay = (r.budgetAmount && r.budgetAmount.trim()) ? `${eesc(r.budgetAmount)} ${eesc(r.budgetCurrency || '')}`.trim() : '';
 
     const detailRow = (label, valueHtml) => `
       <tr>
@@ -773,7 +858,7 @@
         ${detailRow('Campaign Period:', eesc(formatDisplayDate(r.campaignPeriod)))}
         ${detailRow('Campaign End:', eesc(formatDisplayDate(r.campaignEnd)))}
         ${detailRow('Period (days):', eesc(r.periodDays))}
-        ${detailRow('Budget (USD):', eesc(r.budgetUsd))}
+        ${detailRow('Budget:', budgetDisplay)}
         ${detailRow('Report Date:', eesc(formatDisplayDate(r.reportDate)))}
         ${detailRow('Monthly Report and Dashboard:', r.dashboardLinkUrl
           ? `<a href="${escapeHtml(r.dashboardLinkUrl)}" style="color:#1D4ED8;text-decoration:underline;">${eesc(r.dashboardLinkText || 'Open link')}</a>`
@@ -783,18 +868,14 @@
     const perfTable = (t) => {
       const cols = t.columns || DEFAULT_COLUMNS;
       const rows = t.rows.filter(row => cols.some(c => (row.cells[c.key] || '').trim() !== ''));
-      if (t.mode === 'link') {
-        return t.sheetUrl
-          ? `<p style="${FF}font-size:13px;color:#1a1f27;margin:0 0 16px;">Full data: <a href="${escapeHtml(t.sheetUrl)}" style="color:#1D4ED8;text-decoration:underline;">Open table in Google Sheets</a></p>`
-          : '';
-      }
       if (rows.length === 0) return '';
-      const headerBg = t.headerColor || r.headerColor || '#1F2937';
+      const headerBg = t.headerColor || FIXED_HEADER_COLOR;
       const headerText = contrastColor(headerBg);
-      const totalBg = t.totalColor || r.totalColor || '#FCE9A8';
+      const totalBg = t.totalColor || FIXED_TOTAL_COLOR;
+      const tableStyle = t.fixedWidths
+        ? 'border-collapse:collapse;width:100%;margin-bottom:18px;table-layout:fixed;'
+        : 'border-collapse:collapse;width:100%;margin-bottom:18px;';
 
-      // compute rowspans for any column flagged `merge: true` (e.g. Month in Destination Properties):
-      // contiguous non-total rows share one vertically-centered cell; each total row keeps its own cell.
       const mergeSpans = {};
       cols.forEach(c => {
         if (!c.merge) return;
@@ -812,14 +893,19 @@
       });
 
       return `
-        <table role="presentation" cellpadding="12" cellspacing="0" border="1" bordercolor="#E5E7EB" style="border-collapse:collapse;width:100%;margin-bottom:18px;${FF}">
+        <table role="presentation" cellpadding="12" cellspacing="0" border="1" bordercolor="#E5E7EB" style="${tableStyle}${FF}">
           <tr>
-            ${cols.map(c => `<td style="background:${headerBg};color:${headerText};font-size:11.5px;font-weight:bold;text-transform:uppercase;text-align:center;white-space:nowrap;padding:12px 16px;">${eesc(c.label)}</td>`).join('')}
+            ${cols.map(c => `<td style="${c.width ? `width:${c.width}px;` : ''}background:${headerBg};color:${headerText};font-size:11.5px;font-weight:bold;text-transform:uppercase;text-align:center;white-space:nowrap;padding:12px 16px;">${eesc(c.label)}</td>`).join('')}
           </tr>
-          ${rows.map((row, rIdx) => `
-            <tr${row.isTotal ? ` style="background:${totalBg};"` : (t.rowAccentColor ? ` style="background:${t.rowAccentColor};"` : '')}>
+          ${rows.map((row, rIdx) => {
+            let rowBg = '';
+            if (row.isTotal) rowBg = totalBg;
+            else if (t.rowAccentColor) rowBg = t.rowAccentColor;
+            else if (rIdx % 2 === 1) rowBg = FIXED_STRIPE_COLOR;
+            return `
+            <tr${rowBg ? ` style="background:${rowBg};"` : ''}>
               ${cols.map(c => {
-                const cellStyle = `font-size:13.5px;text-align:center;vertical-align:middle;white-space:nowrap;padding:10px 14px;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;`;
+                const cellStyle = `${c.width ? `width:${c.width}px;` : ''}font-size:13.5px;text-align:center;vertical-align:middle;white-space:nowrap;padding:10px 14px;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;`;
                 if (c.merge) {
                   const span = mergeSpans[c.key][rIdx];
                   if (!span.show) return '';
@@ -827,7 +913,8 @@
                 }
                 return `<td style="${cellStyle}">${eesc(row.cells[c.key])}</td>`;
               }).join('')}
-            </tr>`).join('')}
+            </tr>`;
+          }).join('')}
         </table>`;
     };
 
@@ -836,17 +923,44 @@
       ${perfTable(t)}
     `).join('');
 
-    const bulletList = (arr) => {
-      const items = arr.filter(v => v && v.trim() !== '');
-      if (items.length === 0) return '';
-      return `<ul style="${FF}font-size:14px;color:#1a1f27;margin:0 0 6px;padding-left:20px;">${items.map(v => `<li style="margin-bottom:5px;line-height:1.6;">${eesc(v)}</li>`).join('')}</ul>`;
-    };
-
     const summaryBullets = `
       <ul style="${FF}font-size:14px;color:#1a1f27;margin:0 0 6px;padding-left:20px;">
         ${r.monthRevenue ? `<li style="margin-bottom:5px;line-height:1.6;">${eesc(summaryMonthLabel)} Reported Revenue: ${eesc(r.monthRevenue)}</li>` : ''}
         ${r.allTimeRevenue ? `<li style="margin-bottom:5px;line-height:1.6;">All Time Reported Revenue: ${eesc(r.allTimeRevenue)}</li>` : ''}
       </ul>`;
+
+    let bodyHtml;
+    if (r.tabType === 'corporate') {
+      const destItems = DEST_LABELS.filter(d => r.destSummaries && r.destSummaries[d.key] && r.destSummaries[d.key].trim());
+      bodyHtml = `
+        <tr><td style="font-size:15px;font-weight:bold;padding:8px 0 8px 0;">${eesc(r.perfSummaryMonth)} Performance Summary :</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.perfSummaryBullets, FF)}</td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Destination Performance Summary :</td></tr>
+        <tr><td style="padding:0 0 6px 0;">
+          <ul style="${FF}font-size:14px;color:#1a1f27;margin:0 0 6px;padding-left:20px;">
+            ${destItems.map(d => `<li style="margin-bottom:5px;line-height:1.6;"><b>${eesc(d.label)}</b> ${eesc(r.destSummaries[d.key])}</li>`).join('')}
+          </ul>
+        </td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps, FF)}</td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Additional Details :</td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Brand Performance Summary : ${eesc(r.brandSummaryNote)}</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.brandBullets, FF)}</td></tr>
+      `;
+    } else {
+      const hasOthers = (r.others || []).some(o => o.trim());
+      bodyHtml = `
+        <tr><td style="font-size:15px;font-weight:bold;padding:8px 0 8px 0;">Summary of ${eesc(summaryMonthLabel)} what happened?</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${summaryBullets}</td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Key Highlights :</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.keyHighlights, FF)}</td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps, FF)}</td></tr>
+        ${hasOthers ? `
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Others :</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.others, FF)}</td></tr>` : ''}
+      `;
+    }
 
     return `
 <table role="presentation" width="680" cellpadding="0" cellspacing="0" border="0" style="width:680px;max-width:100%;${FF}font-size:14px;color:#1a1f27;">
@@ -858,12 +972,7 @@
   <tr><td style="padding:0 0 8px 0;">${detailsTable}</td></tr>
   <tr><td style="font-style:italic;color:#6b7280;font-size:13px;padding:14px 0 22px 0;">Full version of Monthly Report and Dashboard will be in the attached link.</td></tr>
   <tr><td>${tablesHtml}</td></tr>
-  <tr><td style="font-size:15px;font-weight:bold;padding:8px 0 8px 0;">Summary of ${eesc(summaryMonthLabel)} what happened?</td></tr>
-  <tr><td style="padding:0 0 6px 0;">${summaryBullets}</td></tr>
-  <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Key Highlights :</td></tr>
-  <tr><td style="padding:0 0 6px 0;">${bulletList(r.keyHighlights)}</td></tr>
-  <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
-  <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps)}</td></tr>
+  ${bodyHtml}
   <tr><td style="padding:18px 0 14px 0;">
     <table role="presentation" cellpadding="10" cellspacing="0" border="0" style="background:#FEF9E7;border:1px solid #F5E6A8;border-collapse:collapse;width:100%;">
       <tr><td style="font-size:12.5px;color:#6B5A00;${FF}">*Note on Data Attribution: Please note that attribution data may continue to update within a 7&ndash;30 day attribution window following the initial report date. As the platform continues processing attribution signals and user journey reconciliation, additional bookings and revenue may be attributed back to the original reporting period in subsequent exports.</td></tr>
@@ -894,8 +1003,6 @@
     sel.addRange(range);
     const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 
-    // Attempt an immediate copy right here, inside the click handler (a genuine
-    // user gesture) — this is the most broadly supported way to trigger a copy.
     let copied = false;
     try {
       copied = document.execCommand('copy');
@@ -908,7 +1015,6 @@
       return;
     }
 
-    // Fallback: Clipboard API (async, may prompt for permission in some browsers).
     if (navigator.clipboard && window.ClipboardItem) {
       try {
         const html = el.innerHTML;
@@ -929,21 +1035,6 @@
     showToast(`Selected — press ${isMac ? 'Cmd' : 'Ctrl'}+C now to copy, then paste into Gmail or Outlook.`);
   }
 
-  function actionDownloadEmailHtml() {
-    const cur = getReport();
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(reportLabel(cur))}</title></head><body>${buildEmailHtml(cur)}</body></html>`;
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = (cur.hotelNameBig || 'report').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-email.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('Downloaded — open the file, select all, and paste into Gmail or Outlook.');
-  }
-
   /* ---------- Render ---------- */
   function render() {
     if (!loaded) {
@@ -952,14 +1043,21 @@
     }
     const cur = getReport();
 
+    const tabBarHtml = `
+      <div class="tab-bar">
+        ${Object.keys(TAB_LABELS).map(key => `
+          <button class="tab-btn ${activeTab === key ? 'active' : ''}" data-action="switch-tab" data-tab="${key}">${escapeHtml(TAB_LABELS[key])}</button>
+        `).join('')}
+      </div>
+    `;
+
     const toolbarHtml = `
       <div class="toolbar">
         <div class="toolbar-brand">PMC Report Generator</div>
         <select class="report-select" id="report-select">
-          ${reports.map(r => `<option value="${r.id}" ${r.id === currentId ? 'selected' : ''}>${escapeHtml(reportLabel(r))}</option>`).join('')}
+          ${currentReports().map(r => `<option value="${r.id}" ${r.id === currentIdByTab[activeTab] ? 'selected' : ''}>${escapeHtml(reportLabel(r))}</option>`).join('')}
         </select>
         <button class="tb-btn primary" id="btn-new">+ New Report</button>
-        <button class="tb-btn" id="btn-duplicate">Duplicate</button>
         ${pendingDeleteReport ? `
           <div class="confirm-bar">
             Delete this report?
@@ -967,30 +1065,11 @@
             <button class="tb-btn" id="btn-cancel-delete">Cancel</button>
           </div>
         ` : `<button class="tb-btn danger-btn" id="btn-delete">Delete</button>`}
+        <button class="tb-btn" id="btn-export-json">Export JSON</button>
+        <button class="tb-btn" id="btn-upload-json">Upload JSON</button>
+        <input type="file" id="json-upload-input" accept="application/json,.json" style="display:none;" />
         ${toastMsg ? `<div class="toast-msg${toastMsg.isError ? ' error' : ''}">${escapeHtml(toastMsg.text)}</div>` : ''}
-        <button class="tb-btn" id="btn-print">Print / Export PDF</button>
         <button class="tb-btn primary" id="btn-toggle-preview">${showEmailPreview ? 'Hide Email Preview' : 'Copy for Email'}</button>
-        <button class="tb-btn" id="btn-download-email">Download Email File</button>
-      </div>
-    `;
-
-    const presets = [
-      { header: '#1F2937', total: '#FCE9A8' },
-      { header: '#1F3A5F', total: '#D9E4F5' },
-      { header: '#0F5132', total: '#D2F4E1' },
-      { header: '#7A1F2B', total: '#F8E1C7' }
-    ];
-    const curHeader = (cur.headerColor || '#1F2937').toLowerCase();
-    const colorBarHtml = `
-      <div class="toolbar color-bar">
-        <div class="toolbar-brand">Table Colors</div>
-        ${presets.map(p => `
-          <button class="color-preset ${curHeader === p.header.toLowerCase() ? 'active' : ''}" data-action="set-preset" data-header="${p.header}" data-total="${p.total}" title="Use this palette">
-            <span style="background:${p.header};"></span><span style="background:${p.total};"></span>
-          </button>
-        `).join('')}
-        <label class="color-pick-label">Header <input type="color" data-path="headerColor" value="${escapeHtml(cur.headerColor || '#1F2937')}" /></label>
-        <label class="color-pick-label">Total Row <input type="color" data-path="totalColor" value="${escapeHtml(cur.totalColor || '#FCE9A8')}" /></label>
       </div>
     `;
 
@@ -1008,17 +1087,14 @@
       </div>
     ` : '';
 
-    const tablesHtml = cur.tables.map(t => renderTable(t, cur)).join('');
+    const tablesHtml = cur.tables.map(t => renderTable(t)).join('');
 
-    const highlightsHtml = renderBulletEditor(cur.keyHighlights, 'keyHighlights');
-    const nextStepsHtml = renderBulletEditor(cur.nextSteps, 'nextSteps');
-
-    const summaryMonthLabel = cur.summaryMonth && cur.summaryMonth.trim() ? cur.summaryMonth.trim() : '\u2014';
+    const bodyHtml = activeTab === 'corporate' ? renderCorporateBody(cur) : renderStandardBody(cur);
 
     app.innerHTML = `
       <div class="wrap">
+        ${tabBarHtml}
         ${toolbarHtml}
-        ${colorBarHtml}
         ${previewHtml}
         <div class="paper">
           <p class="salutation">
@@ -1048,10 +1124,15 @@
             <div><input type="date" class="line-input date-input" data-path="campaignEnd" value="${escapeHtml(cur.campaignEnd)}" /></div>
 
             <div class="detail-label">Period (days):</div>
-            <div><input class="line-input" data-path="periodDays" placeholder="93 days" value="${escapeHtml(cur.periodDays)}" readonly title="Auto-calculated from Campaign Period and Campaign End" /></div>
+            <div><input class="line-input" data-path="periodDays" value="${escapeHtml(cur.periodDays)}" readonly title="Auto-calculated from Campaign Period and Campaign End" /></div>
 
-            <div class="detail-label">Budget (USD):</div>
-            <div><input class="line-input" data-path="budgetUsd" placeholder="$5,000" value="${escapeHtml(cur.budgetUsd)}" /></div>
+            <div class="detail-label">Budget:</div>
+            <div>
+              <select class="line-input currency-select" data-path="budgetCurrency">
+                ${CURRENCIES.map(c => `<option value="${c}" ${(cur.budgetCurrency || 'USD') === c ? 'selected' : ''}>${c}</option>`).join('')}
+              </select>
+              <input class="line-input" data-path="budgetAmount" value="${escapeHtml(cur.budgetAmount)}" />
+            </div>
 
             <div class="detail-label">Report Date:</div>
             <div><input type="date" class="line-input date-input" data-path="reportDate" value="${escapeHtml(cur.reportDate)}" /></div>
@@ -1071,7 +1152,7 @@
             <div class="template-picker">
               <div class="template-picker-title">Choose a table template</div>
               <div class="template-grid">
-                ${Object.keys(TEMPLATES).map(key => `
+                ${TAB_TEMPLATE_KEYS[activeTab].map(key => `
                   <button class="template-option" data-action="add-table" data-template="${key}">
                     <span class="tpl-swatch" style="background:${TEMPLATES[key].headerColor};"></span>
                     <span class="tpl-name">${escapeHtml(TEMPLATES[key].label)}</span>
@@ -1084,19 +1165,7 @@
             <button class="add-table-btn" id="btn-add-table">+ Add Channel Table</button>
           `}
 
-          <h2 class="summary-heading">
-            Summary of <input class="line-input" data-path="summaryMonth" placeholder="July 2026" value="${escapeHtml(cur.summaryMonth)}" /> what happened?
-          </h2>
-          <ul class="bullet-list">
-            <li>${escapeHtml(summaryMonthLabel)} Reported Revenue: <input class="line-input wide" data-path="monthRevenue" placeholder="49,220.95 USD with ROAS 30.39" value="${escapeHtml(cur.monthRevenue)}" /></li>
-            <li>All Time Reported Revenue: <input class="line-input wide" data-path="allTimeRevenue" placeholder="81,358.95 USD with ROAS 33.00" value="${escapeHtml(cur.allTimeRevenue)}" /></li>
-          </ul>
-
-          <h2 class="summary-heading">Key Highlights :</h2>
-          ${highlightsHtml}
-
-          <h2 class="summary-heading">Next Step :</h2>
-          ${nextStepsHtml}
+          ${bodyHtml}
 
           <div class="note-box">
             *Note on Data Attribution: Please note that attribution data may continue to update within a 7–30 day attribution window following the initial report date. As the platform continues processing attribution signals and user journey reconciliation, additional bookings and revenue may be attributed back to the original reporting period in subsequent exports.
@@ -1110,16 +1179,63 @@
     bindEvents();
   }
 
-  function renderTable(t, report) {
+  function renderStandardBody(cur) {
+    const summaryMonthLabel = cur.summaryMonth && cur.summaryMonth.trim() ? cur.summaryMonth.trim() : '\u2014';
+    return `
+      <h2 class="summary-heading">
+        Summary of <input class="line-input" data-path="summaryMonth" placeholder="July 2026" value="${escapeHtml(cur.summaryMonth)}" /> what happened?
+      </h2>
+      <ul class="bullet-list">
+        <li>${escapeHtml(summaryMonthLabel)} Reported Revenue: <input class="line-input wide" data-path="monthRevenue" placeholder="49,220.95 USD with ROAS 30.39" value="${escapeHtml(cur.monthRevenue)}" /></li>
+        <li>All Time Reported Revenue: <input class="line-input wide" data-path="allTimeRevenue" placeholder="81,358.95 USD with ROAS 33.00" value="${escapeHtml(cur.allTimeRevenue)}" /></li>
+      </ul>
+
+      <h2 class="summary-heading">Key Highlights :</h2>
+      ${renderBulletEditor(cur.keyHighlights, 'keyHighlights')}
+
+      <h2 class="summary-heading">Next Step :</h2>
+      ${renderBulletEditor(cur.nextSteps, 'nextSteps')}
+
+      <h2 class="summary-heading">Others :</h2>
+      ${renderBulletEditor(cur.others, 'others')}
+    `;
+  }
+
+  function renderCorporateBody(cur) {
+    return `
+      <h2 class="summary-heading">
+        <input class="line-input" data-path="perfSummaryMonth" placeholder="June" value="${escapeHtml(cur.perfSummaryMonth)}" /> Performance Summary :
+      </h2>
+      ${renderBulletEditor(cur.perfSummaryBullets, 'perfSummaryBullets')}
+
+      <h2 class="summary-heading">Destination Performance Summary :</h2>
+      <div class="dest-summary-list">
+        ${DEST_LABELS.map(d => `
+          <div class="dest-summary-row">
+            <b>${escapeHtml(d.label)}</b>
+            <input class="line-input wide" data-path="destSummaries.${d.key}" placeholder="Describe ${escapeHtml(d.label)} performance..." value="${escapeHtml((cur.destSummaries || {})[d.key])}" />
+          </div>
+        `).join('')}
+      </div>
+
+      <h2 class="summary-heading">Next Step :</h2>
+      ${renderBulletEditor(cur.nextSteps, 'nextSteps')}
+
+      <h2 class="summary-heading">Additional Details :</h2>
+
+      <h2 class="summary-heading">Brand Performance Summary : <input class="line-input wide" data-path="brandSummaryNote" value="${escapeHtml(cur.brandSummaryNote)}" /></h2>
+      ${renderBulletEditor(cur.brandBullets, 'brandBullets')}
+    `;
+  }
+
+  function renderTable(t) {
     const cols = tableColumns(t);
-    const headerBg = t.headerColor || report.headerColor || '#1F2937';
+    const headerBg = t.headerColor || FIXED_HEADER_COLOR;
     const headerText = contrastColor(headerBg);
-    const totalBg = t.totalColor || report.totalColor || '#FCE9A8';
+    const totalBg = t.totalColor || FIXED_TOTAL_COLOR;
     const tplLabel = (TEMPLATES[t.template] || TEMPLATES.standard).label;
 
-    // compute rowspans for any column flagged `merge: true` (e.g. Month in Destination Properties):
-    // contiguous non-total rows share one vertically-centered cell; each total row keeps its own cell.
-    const mergeSpans = {}; // colKey -> { rowIndex: {span, show} }
+    const mergeSpans = {};
     cols.forEach(c => {
       if (!c.merge) return;
       const spans = {};
@@ -1135,87 +1251,65 @@
       mergeSpans[c.key] = spans;
     });
 
-    const rowsHtml = t.rows.map((row, rIdx) => `
-      <tr class="${row.isTotal ? 'total-row' : ''}" ${row.isTotal ? `style="--row-total-color:${totalBg};"` : (t.rowAccentColor ? `style="background:${t.rowAccentColor};"` : '')}>
+    const rowsHtml = t.rows.map((row, rIdx) => {
+      let rowBg = '';
+      if (row.isTotal) rowBg = totalBg;
+      else if (t.rowAccentColor) rowBg = t.rowAccentColor;
+      else if (rIdx % 2 === 1) rowBg = FIXED_STRIPE_COLOR;
+      return `
+      <tr class="${row.isTotal ? 'total-row' : ''}" ${rowBg ? `style="background:${rowBg};"` : ''}>
         ${cols.map(c => {
+          const widthStyle = c.width ? ` style="width:${c.width}px;"` : '';
           if (c.merge) {
             const span = mergeSpans[c.key][rIdx];
             if (!span.show) return '';
-            return `<td ${span.span > 1 ? `rowspan="${span.span}"` : ''}><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
+            return `<td${widthStyle}${span.span > 1 ? ` rowspan="${span.span}"` : ''}><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
           }
-          return `<td><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
+          return `<td${widthStyle}><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
         }).join('')}
         <td class="row-actions">
           <button class="row-btn total-toggle ${row.isTotal ? 'active' : ''}" data-action="toggle-total" data-table="${t.id}" data-row="${row.id}" title="Mark as TOTAL row">TOTAL</button>
           <button class="row-btn" data-action="remove-row" data-table="${t.id}" data-row="${row.id}" title="Remove row">\u2715</button>
         </td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
 
     return `
       <div class="table-block">
         <div class="table-block-head">
           <input class="table-title-input" data-table-title="${t.id}" value="${escapeHtml(t.title)}" />
           <span class="tpl-badge">${escapeHtml(tplLabel)}</span>
-          <div class="mode-toggle">
-            <button data-action="set-mode" data-mode="manual" data-table="${t.id}" class="${t.mode === 'manual' ? 'active' : ''}">Manual Table</button>
-            <button data-action="set-mode" data-mode="link" data-table="${t.id}" class="${t.mode === 'link' ? 'active' : ''}">Google Sheet Link</button>
-          </div>
-          <label class="color-pick-label" title="Header color for this table">Hdr <input type="color" data-table-color="${t.id}" data-color-field="headerColor" value="${headerBg}" /></label>
-          <label class="color-pick-label" title="Total row color for this table">Tot <input type="color" data-table-color="${t.id}" data-color-field="totalColor" value="${totalBg}" /></label>
-          <button class="icon-btn" data-action="toggle-pastebox" data-table="${t.id}">${openPasteTables.has(t.id) ? 'Close paste box' : '\ud83d\udccb Paste from Excel/Sheets'}</button>
           <button class="icon-btn" data-action="remove-table" data-table="${t.id}" title="Remove this table">Remove table</button>
         </div>
 
-        ${openPasteTables.has(t.id) ? `
-          <div class="paste-box">
-            <div class="paste-box-label">Paste rows copied from Excel or Google Sheets below (columns in this order: ${cols.map(c => escapeHtml(c.label)).join(' | ')}). A pasted header row is detected and skipped automatically.</div>
-            <textarea data-paste-table="${t.id}" placeholder="${cols.map(c => c.label).join('\t')}
-June	1234	...
-July	2345	..."></textarea>
-            <div class="paste-box-actions">
-              <button class="tb-btn primary" data-action="apply-paste" data-table="${t.id}">Fill table</button>
-              <button class="tb-btn" data-action="cancel-paste" data-table="${t.id}">Cancel</button>
-            </div>
-          </div>
-        ` : ''}
-
-        ${t.mode === 'manual' ? `
-          <div class="paste-hint">Tip: use the "Paste from Excel/Sheets" button above to fill many cells at once — pasting directly into a cell may not work in all environments.</div>
-          <div class="table-scroll">
-            <table class="perf">
-              <thead>
-                <tr style="--row-header-color:${headerBg};--row-header-text:${headerText};">
-                  ${cols.map(c => `<th>${c.label}</th>`).join('')}
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>${rowsHtml}</tbody>
-            </table>
-          </div>
-          <div style="margin-top:8px;">
-            <button class="add-row-btn" data-action="add-row" data-table="${t.id}">+ Add Row</button>
-          </div>
-        ` : `
-          <div class="sheet-link-box">
-            <span style="font-size:13px;color:var(--text-muted);">Google Sheet URL:</span>
-            <input class="line-input" data-table-sheet="${t.id}" placeholder="https://docs.google.com/spreadsheets/..." value="${escapeHtml(t.sheetUrl)}" />
-            ${t.sheetUrl ? `<a class="hint" href="${escapeHtml(t.sheetUrl)}" target="_blank" rel="noopener">Open table in Google Sheets \u2197</a>` : ''}
-          </div>
-        `}
+        <div class="table-scroll">
+          <table class="perf ${t.fixedWidths ? 'fixed-cols' : ''}">
+            <thead>
+              <tr style="--row-header-color:${headerBg};--row-header-text:${headerText};">
+                ${cols.map(c => `<th ${c.width ? `style="width:${c.width}px;"` : ''}>${c.label}</th>`).join('')}
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+        <div style="margin-top:8px;">
+          <button class="add-row-btn" data-action="add-row" data-table="${t.id}">+ Add Row</button>
+        </div>
       </div>
     `;
   }
 
   function renderBulletEditor(arr, field) {
-    const rows = arr.map((val, idx) => `
+    const rows = (arr || []).map((val, idx) => `
       <div class="bullet-row">
         <span style="color:var(--text-muted);font-size:13px;">\u2022</span>
         <input class="line-input" data-bullet="${field}" data-idx="${idx}" value="${escapeHtml(val)}" placeholder="Type a point..." />
         <button class="row-btn" data-action="remove-bullet" data-field="${field}" data-idx="${idx}" title="Remove">\u2715</button>
       </div>
     `).join('');
-    const addDisabled = arr.length >= 6;
+    const addDisabled = (arr || []).length >= 6;
     return `
       ${rows}
       <button class="add-row-btn" data-action="add-bullet" data-field="${field}" ${addDisabled ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>+ Add point ${addDisabled ? '(max 6)' : ''}</button>
@@ -1225,50 +1319,46 @@ July	2345	..."></textarea>
   function bindEvents() {
     const cur = getReport();
 
+    // Tab bar
+    app.querySelectorAll('[data-action="switch-tab"]').forEach(btn => {
+      btn.addEventListener('click', () => actionSwitchTab(btn.getAttribute('data-tab')));
+    });
+
     // Toolbar
     const sel = document.getElementById('report-select');
     if (sel) sel.addEventListener('change', (e) => actionSelectReport(e.target.value));
     const btnNew = document.getElementById('btn-new');
     if (btnNew) btnNew.addEventListener('click', actionNewReport);
-    const btnDup = document.getElementById('btn-duplicate');
-    if (btnDup) btnDup.addEventListener('click', actionDuplicateReport);
     const btnDel = document.getElementById('btn-delete');
     if (btnDel) btnDel.addEventListener('click', actionRequestDelete);
     const btnConfirmDel = document.getElementById('btn-confirm-delete');
     if (btnConfirmDel) btnConfirmDel.addEventListener('click', actionConfirmDelete);
     const btnCancelDel = document.getElementById('btn-cancel-delete');
     if (btnCancelDel) btnCancelDel.addEventListener('click', actionCancelDelete);
-    const btnPrint = document.getElementById('btn-print');
-    if (btnPrint) btnPrint.addEventListener('click', actionPrint);
     const btnTogglePreview = document.getElementById('btn-toggle-preview');
     if (btnTogglePreview) btnTogglePreview.addEventListener('click', actionTogglePreview);
     const btnSelectPreview = document.getElementById('btn-select-preview');
     if (btnSelectPreview) btnSelectPreview.addEventListener('click', actionSelectPreview);
-    const btnDownloadEmail = document.getElementById('btn-download-email');
-    if (btnDownloadEmail) btnDownloadEmail.addEventListener('click', actionDownloadEmailHtml);
     const btnAddTable = document.getElementById('btn-add-table');
     if (btnAddTable) btnAddTable.addEventListener('click', actionOpenTemplatePicker);
     const btnCancelTemplate = document.getElementById('btn-cancel-template');
     if (btnCancelTemplate) btnCancelTemplate.addEventListener('click', actionCloseTemplatePicker);
+    const btnExportJson = document.getElementById('btn-export-json');
+    if (btnExportJson) btnExportJson.addEventListener('click', actionExportJson);
+    const btnUploadJson = document.getElementById('btn-upload-json');
+    if (btnUploadJson) btnUploadJson.addEventListener('click', actionTriggerUpload);
+    const uploadInput = document.getElementById('json-upload-input');
+    if (uploadInput) uploadInput.addEventListener('change', (e) => actionHandleUploadFile(e.target.files[0]));
 
-    // Per-table color pickers
-    app.querySelectorAll('input[data-table-color]').forEach(inp => {
-      inp.addEventListener('input', (e) => {
-        actionSetTableColor(inp.getAttribute('data-table-color'), inp.getAttribute('data-color-field'), e.target.value);
-      });
-    });
-
-    // Simple field inputs (data-path)
-    app.querySelectorAll('input[data-path]').forEach(inp => {
+    // Simple field inputs (data-path) — includes <select> for currency
+    app.querySelectorAll('input[data-path], select[data-path]').forEach(inp => {
       inp.addEventListener('input', (e) => {
         const path = inp.getAttribute('data-path');
         setPath(cur, path, e.target.value);
         scheduleSave();
-        // live-update dashboard link preview without full rerender
         if (path === 'dashboardLinkUrl' || path === 'dashboardLinkText') {
           updateDashboardLinkPreview(cur);
         }
-        // auto-fill "attribution for" and "Campaign" from the hotel name
         if (path === 'hotelNameBig') {
           cur.attributionFor = e.target.value;
           cur.campaign = e.target.value;
@@ -1277,15 +1367,10 @@ July	2345	..."></textarea>
           if (attrInp) attrInp.value = e.target.value;
           if (campInp) campInp.value = e.target.value;
         }
-        // auto-calculate "Period (days)" from Campaign Period + Campaign End (inclusive of both dates)
         if (path === 'campaignPeriod' || path === 'campaignEnd') {
           cur.periodDays = computePeriodDays(cur.campaignPeriod, cur.campaignEnd);
           const periodInp = app.querySelector('input[data-path="periodDays"]');
           if (periodInp) periodInp.value = cur.periodDays;
-        }
-        // colors are baked into many inline styles at render time, so re-render
-        if (path === 'headerColor' || path === 'totalColor') {
-          render();
         }
       });
     });
@@ -1295,15 +1380,6 @@ July	2345	..."></textarea>
       inp.addEventListener('input', (e) => {
         const t = cur.tables.find(t => t.id === inp.getAttribute('data-table-title'));
         t.title = e.target.value;
-        scheduleSave();
-      });
-    });
-
-    // Sheet URL
-    app.querySelectorAll('input[data-table-sheet]').forEach(inp => {
-      inp.addEventListener('input', (e) => {
-        const t = cur.tables.find(t => t.id === inp.getAttribute('data-table-sheet'));
-        t.sheetUrl = e.target.value;
         scheduleSave();
       });
     });
@@ -1320,7 +1396,7 @@ July	2345	..."></textarea>
       inp.addEventListener('paste', (e) => {
         const text = (e.clipboardData || window.clipboardData).getData('text');
         if (!text || (!text.includes('\t') && !text.includes('\n'))) {
-          return; // plain single value — let the browser paste normally
+          return;
         }
         e.preventDefault();
 
@@ -1330,6 +1406,7 @@ July	2345	..."></textarea>
         const startColIdx = cols.findIndex(c => c.key === inp.getAttribute('data-cell'));
         if (startRowIdx === -1 || startColIdx === -1) return;
 
+        pushUndoSnapshot();
         const pastedRows = text.replace(/\r/g, '').split('\n').filter((line, idx, arr) => !(idx === arr.length - 1 && line === ''));
         pastedRows.forEach((line, rOffset) => {
           const values = line.split('\t');
@@ -1359,6 +1436,7 @@ July	2345	..."></textarea>
 
     // Action buttons (structural changes -> full render)
     app.querySelectorAll('[data-action]').forEach(btn => {
+      if (btn.getAttribute('data-action') === 'switch-tab') return; // already bound above
       btn.addEventListener('click', () => {
         const action = btn.getAttribute('data-action');
         const tableId = btn.getAttribute('data-table');
@@ -1367,20 +1445,9 @@ July	2345	..."></textarea>
         else if (action === 'remove-row') actionRemoveRow(tableId, rowId);
         else if (action === 'toggle-total') actionToggleTotal(tableId, rowId);
         else if (action === 'remove-table') actionRemoveTable(tableId);
-        else if (action === 'set-mode') actionSetTableMode(tableId, btn.getAttribute('data-mode'));
         else if (action === 'add-bullet') actionAddBullet(btn.getAttribute('data-field'));
         else if (action === 'remove-bullet') actionRemoveBullet(btn.getAttribute('data-field'), parseInt(btn.getAttribute('data-idx'), 10));
         else if (action === 'add-table') actionAddTable(btn.getAttribute('data-template'));
-        else if (action === 'toggle-pastebox') actionTogglePasteBox(tableId);
-        else if (action === 'cancel-paste') actionCancelPasteBox(tableId);
-        else if (action === 'apply-paste') actionApplyPasteBox(tableId);
-        else if (action === 'set-preset') {
-          cur.headerColor = btn.getAttribute('data-header');
-          cur.totalColor = btn.getAttribute('data-total');
-          cur.tables.forEach(t => { t.headerColor = cur.headerColor; t.totalColor = cur.totalColor; });
-          scheduleSave();
-          render();
-        }
       });
     });
   }
