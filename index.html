@@ -143,6 +143,7 @@
     min-width: 80px;
   }
   .line-input:focus { border-bottom-color: var(--accent-brand); }
+  .line-input[readonly] { color: var(--text-muted); cursor: default; }
   .line-input.wide { min-width: 220px; }
   .line-input.xwide { min-width: 320px; }
   .line-input.date-input { min-width: 150px; font-family: var(--font-body); color: var(--text); }
@@ -278,7 +279,7 @@
   const STORAGE_KEY = 'monthly_reports';
   const app = document.getElementById('app');
 
-  const COLUMNS = [
+  const DEFAULT_COLUMNS = [
     { key: 'month', label: 'Month' },
     { key: 'adSpent', label: 'Ad Spent' },
     { key: 'impressions', label: 'Impressions' },
@@ -294,6 +295,92 @@
     { key: 'roas', label: 'ROAS' }
   ];
 
+  const TEMPLATES = {
+    standard: {
+      label: 'Standard Performance',
+      title: 'New Channel Table',
+      headerColor: '#1F2937',
+      totalColor: '#FCE9A8',
+      columns: DEFAULT_COLUMNS,
+      rows: (cols) => [rowWith(cols, { month: 'June' }), rowWith(cols, { month: 'July' }), totalRowWith(cols, { month: 'TOTAL' })]
+    },
+    destination: {
+      label: 'Destination Properties',
+      title: 'Destination Properties',
+      headerColor: '#2E3F8F',
+      totalColor: '#D9D9D9',
+      columns: [
+        { key: 'month', label: 'Month' },
+        { key: 'destination', label: 'Destination / Properties' },
+        { key: 'spending', label: 'Spending' },
+        { key: 'bookings', label: 'Bookings' },
+        { key: 'revenue', label: 'Revenue' },
+        { key: 'roas', label: 'ROAS' }
+      ],
+      rows: (cols) => [
+        rowWith(cols, { month: 'June', destination: 'Thailand PT' }),
+        rowWith(cols, { destination: 'China PT' }),
+        rowWith(cols, { destination: 'Maldives PT' }),
+        rowWith(cols, { destination: 'Sri Lanka PT' }),
+        rowWith(cols, { destination: 'Vietnam PT' }),
+        rowWith(cols, { destination: 'The Rest of ASIA PT' }),
+        rowWith(cols, { destination: 'Minor RT' }),
+        totalRowWith(cols, { destination: 'Total' })
+      ]
+    },
+    branding: {
+      label: 'Branding Metrics',
+      title: 'Branding',
+      headerColor: '#808080',
+      totalColor: '#9CA3AF',
+      columns: [
+        { key: 'month', label: 'Month' },
+        { key: 'spending', label: 'Spending' },
+        { key: 'impressions', label: 'Impressions' },
+        { key: 'cpm', label: 'CPM' },
+        { key: 'clicks', label: 'Clicks' },
+        { key: 'cpc', label: 'CPC' },
+        { key: 'ctr', label: 'CTR' },
+        { key: 'newUsers', label: 'New Users' },
+        { key: 'returningUsers', label: 'Returning Users' },
+        { key: 'sessions', label: 'Sessions' },
+        { key: 'engagedSessions', label: 'Engaged Sessions' },
+        { key: 'engagementRate', label: 'Engagement Rate' },
+        { key: 'avgEngagementTime', label: 'Avg. Engagement Time / Session (Sec)' }
+      ],
+      rows: (cols) => [
+        ...['January', 'February', 'March', 'April', 'May', 'June', 'July'].map(m => rowWith(cols, { month: m })),
+        totalRowWith(cols, { month: 'TOTAL' })
+      ]
+    },
+    conversion: {
+      label: 'Conversion Metrics',
+      title: 'Conversion (Actual Booking & Revenue based on Attribution Report)',
+      headerColor: '#1F3A5F',
+      totalColor: '#FCE9A8',
+      columns: [
+        { key: 'month', label: 'Month' },
+        { key: 'spending', label: 'Spending' },
+        { key: 'impressions', label: 'Impressions' },
+        { key: 'cpm', label: 'CPM' },
+        { key: 'clicks', label: 'Clicks' },
+        { key: 'cpc', label: 'CPC' },
+        { key: 'ctr', label: 'CTR' },
+        { key: 'bookings', label: 'Bookings' },
+        { key: 'cpa', label: 'CPA' },
+        { key: 'cvr', label: 'CVR' },
+        { key: 'abv', label: 'ABV' },
+        { key: 'revenue', label: 'Revenue' },
+        { key: 'roomNights', label: 'Room Nights' },
+        { key: 'roas', label: 'ROAS' }
+      ],
+      rows: (cols) => [
+        ...['January', 'February', 'March', 'April', 'May', 'June', 'July'].map(m => rowWith(cols, { month: m })),
+        totalRowWith(cols, { month: 'TOTAL' })
+      ]
+    }
+  };
+
   let reports = [];
   let currentId = null;
   let loaded = false;
@@ -302,27 +389,49 @@
   let toastMsg = null; // { text, isError }
   let toastTimer = null;
   let showEmailPreview = false;
+  let showTemplatePicker = false;
 
   function uid(prefix) {
     return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  function blankRow(month) {
+  function tableColumns(t) {
+    return t.columns || DEFAULT_COLUMNS;
+  }
+
+  function blankRow(cols) {
+    const columns = cols || DEFAULT_COLUMNS;
     const cells = {};
-    COLUMNS.forEach(c => cells[c.key] = '');
-    if (month) cells.month = month;
+    columns.forEach(c => cells[c.key] = '');
     return { id: uid('row'), isTotal: false, cells };
   }
 
-  function totalRow() {
-    const cells = {};
-    COLUMNS.forEach(c => cells[c.key] = '');
-    cells.month = 'TOTAL';
-    return { id: uid('row'), isTotal: true, cells };
+  function rowWith(cols, values) {
+    const row = blankRow(cols);
+    Object.assign(row.cells, values);
+    return row;
   }
 
-  function blankTable(title) {
-    return { id: uid('tbl'), title, mode: 'manual', sheetUrl: '', rows: [blankRow('June'), blankRow('July'), totalRow()] };
+  function totalRowWith(cols, values) {
+    const row = blankRow(cols);
+    row.isTotal = true;
+    Object.assign(row.cells, values);
+    return row;
+  }
+
+  function blankTable(title, templateKey) {
+    const tpl = TEMPLATES[templateKey] || TEMPLATES.standard;
+    return {
+      id: uid('tbl'),
+      title: title || tpl.title,
+      mode: 'manual',
+      sheetUrl: '',
+      template: templateKey || 'standard',
+      columns: tpl.columns,
+      headerColor: tpl.headerColor,
+      totalColor: tpl.totalColor,
+      rows: tpl.rows(tpl.columns)
+    };
   }
 
   function newReport() {
@@ -343,9 +452,9 @@
       headerColor: '#1F2937',
       totalColor: '#FCE9A8',
       tables: [
-        blankTable('Overall Performance'),
-        blankTable('Channel 1: Display PT'),
-        blankTable('Channel 2: Display RT')
+        blankTable('Overall Performance', 'standard'),
+        blankTable('Channel 1: Display PT', 'standard'),
+        blankTable('Channel 2: Display RT', 'standard')
       ],
       summaryMonth: '',
       monthRevenue: '',
@@ -422,6 +531,17 @@
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
+  function computePeriodDays(startIso, endIso) {
+    if (!startIso || !endIso) return '';
+    const start = new Date(startIso + 'T00:00:00');
+    const end = new Date(endIso + 'T00:00:00');
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return '';
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    const diffDays = Math.round((end.getTime() - start.getTime()) / MS_PER_DAY) + 1; // inclusive of both start and end date
+    if (diffDays <= 0) return '';
+    return diffDays + (diffDays === 1 ? ' day' : ' days');
+  }
+
   function contrastColor(hex) {
     if (!hex) return '#ffffff';
     const h = hex.replace('#', '');
@@ -484,9 +604,18 @@
     render();
   }
 
-  function actionAddTable() {
+  function actionOpenTemplatePicker() {
+    showTemplatePicker = true;
+    render();
+  }
+  function actionCloseTemplatePicker() {
+    showTemplatePicker = false;
+    render();
+  }
+  function actionAddTable(templateKey) {
     const cur = getReport();
-    cur.tables.push(blankTable('New Channel Table'));
+    cur.tables.push(blankTable(null, templateKey));
+    showTemplatePicker = false;
     scheduleSave();
     render();
   }
@@ -506,7 +635,7 @@
   function actionAddRow(tableId) {
     const cur = getReport();
     const t = cur.tables.find(t => t.id === tableId);
-    t.rows.push(blankRow());
+    t.rows.push(blankRow(tableColumns(t)));
     scheduleSave();
     render();
   }
@@ -522,6 +651,14 @@
     const t = cur.tables.find(t => t.id === tableId);
     const row = t.rows.find(r => r.id === rowId);
     row.isTotal = !row.isTotal;
+    scheduleSave();
+    render();
+  }
+
+  function actionSetTableColor(tableId, field, value) {
+    const cur = getReport();
+    const t = cur.tables.find(t => t.id === tableId);
+    t[field] = value;
     scheduleSave();
     render();
   }
@@ -578,24 +715,25 @@
       </table>`;
 
     const perfTable = (t) => {
-      const rows = t.rows.filter(row => COLUMNS.some(c => (row.cells[c.key] || '').trim() !== ''));
+      const cols = t.columns || DEFAULT_COLUMNS;
+      const rows = t.rows.filter(row => cols.some(c => (row.cells[c.key] || '').trim() !== ''));
       if (t.mode === 'link') {
         return t.sheetUrl
           ? `<p style="${FF}font-size:13px;color:#1a1f27;margin:0 0 16px;">Full data: <a href="${escapeHtml(t.sheetUrl)}" style="color:#1D4ED8;text-decoration:underline;">Open table in Google Sheets</a></p>`
           : '';
       }
       if (rows.length === 0) return '';
-      const headerBg = r.headerColor || '#1F2937';
+      const headerBg = t.headerColor || r.headerColor || '#1F2937';
       const headerText = contrastColor(headerBg);
-      const totalBg = r.totalColor || '#FCE9A8';
+      const totalBg = t.totalColor || r.totalColor || '#FCE9A8';
       return `
         <table role="presentation" cellpadding="12" cellspacing="0" border="1" bordercolor="#E5E7EB" style="border-collapse:collapse;width:100%;margin-bottom:18px;${FF}">
           <tr>
-            ${COLUMNS.map(c => `<td style="background:${headerBg};color:${headerText};font-size:11.5px;font-weight:bold;text-transform:uppercase;text-align:center;white-space:nowrap;padding:12px 16px;">${eesc(c.label)}</td>`).join('')}
+            ${cols.map(c => `<td style="background:${headerBg};color:${headerText};font-size:11.5px;font-weight:bold;text-transform:uppercase;text-align:center;white-space:nowrap;padding:12px 16px;">${eesc(c.label)}</td>`).join('')}
           </tr>
           ${rows.map(row => `
             <tr${row.isTotal ? ` style="background:${totalBg};"` : ''}>
-              ${COLUMNS.map(c => `<td style="font-size:13.5px;text-align:center;white-space:nowrap;padding:10px 14px;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;">${eesc(row.cells[c.key])}</td>`).join('')}
+              ${cols.map(c => `<td style="font-size:13.5px;text-align:center;white-space:nowrap;padding:10px 14px;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;">${eesc(row.cells[c.key])}</td>`).join('')}
             </tr>`).join('')}
         </table>`;
     };
@@ -817,7 +955,7 @@
             <div><input type="date" class="line-input date-input" data-path="campaignEnd" value="${escapeHtml(cur.campaignEnd)}" /></div>
 
             <div class="detail-label">Period (days):</div>
-            <div><input class="line-input" data-path="periodDays" placeholder="93 days" value="${escapeHtml(cur.periodDays)}" /></div>
+            <div><input class="line-input" data-path="periodDays" placeholder="93 days" value="${escapeHtml(cur.periodDays)}" readonly title="Auto-calculated from Campaign Period and Campaign End" /></div>
 
             <div class="detail-label">Budget (USD):</div>
             <div><input class="line-input" data-path="budgetUsd" placeholder="$5,000" value="${escapeHtml(cur.budgetUsd)}" /></div>
@@ -836,7 +974,22 @@
           <p class="italic-note">Full version of Monthly Report and Dashboard will be in the attached link.</p>
 
           ${tablesHtml}
-          <button class="add-table-btn" id="btn-add-table">+ Add Channel Table</button>
+          ${showTemplatePicker ? `
+            <div class="template-picker">
+              <div class="template-picker-title">Choose a table template</div>
+              <div class="template-grid">
+                ${Object.keys(TEMPLATES).map(key => `
+                  <button class="template-option" data-action="add-table" data-template="${key}">
+                    <span class="tpl-swatch" style="background:${TEMPLATES[key].headerColor};"></span>
+                    <span class="tpl-name">${escapeHtml(TEMPLATES[key].label)}</span>
+                  </button>
+                `).join('')}
+              </div>
+              <button class="tb-btn" id="btn-cancel-template">Cancel</button>
+            </div>
+          ` : `
+            <button class="add-table-btn" id="btn-add-table">+ Add Channel Table</button>
+          `}
 
           <h2 class="summary-heading">
             Summary of <input class="line-input" data-path="summaryMonth" placeholder="July 2026" value="${escapeHtml(cur.summaryMonth)}" /> what happened?
@@ -865,12 +1018,14 @@
   }
 
   function renderTable(t, report) {
-    const headerBg = report.headerColor || '#1F2937';
+    const cols = tableColumns(t);
+    const headerBg = t.headerColor || report.headerColor || '#1F2937';
     const headerText = contrastColor(headerBg);
-    const totalBg = report.totalColor || '#FCE9A8';
+    const totalBg = t.totalColor || report.totalColor || '#FCE9A8';
+    const tplLabel = (TEMPLATES[t.template] || TEMPLATES.standard).label;
     const rowsHtml = t.rows.map(row => `
       <tr class="${row.isTotal ? 'total-row' : ''}" ${row.isTotal ? `style="--row-total-color:${totalBg};"` : ''}>
-        ${COLUMNS.map(c => `
+        ${cols.map(c => `
           <td><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>
         `).join('')}
         <td class="row-actions">
@@ -884,10 +1039,13 @@
       <div class="table-block">
         <div class="table-block-head">
           <input class="table-title-input" data-table-title="${t.id}" value="${escapeHtml(t.title)}" />
+          <span class="tpl-badge">${escapeHtml(tplLabel)}</span>
           <div class="mode-toggle">
             <button data-action="set-mode" data-mode="manual" data-table="${t.id}" class="${t.mode === 'manual' ? 'active' : ''}">Manual Table</button>
             <button data-action="set-mode" data-mode="link" data-table="${t.id}" class="${t.mode === 'link' ? 'active' : ''}">Google Sheet Link</button>
           </div>
+          <label class="color-pick-label" title="Header color for this table">Hdr <input type="color" data-table-color="${t.id}" data-color-field="headerColor" value="${headerBg}" /></label>
+          <label class="color-pick-label" title="Total row color for this table">Tot <input type="color" data-table-color="${t.id}" data-color-field="totalColor" value="${totalBg}" /></label>
           <button class="icon-btn" data-action="remove-table" data-table="${t.id}" title="Remove this table">Remove table</button>
         </div>
 
@@ -897,7 +1055,7 @@
             <table class="perf">
               <thead>
                 <tr style="--row-header-color:${headerBg};--row-header-text:${headerText};">
-                  ${COLUMNS.map(c => `<th>${c.label}</th>`).join('')}
+                  ${cols.map(c => `<th>${c.label}</th>`).join('')}
                   <th></th>
                 </tr>
               </thead>
@@ -958,7 +1116,16 @@
     const btnDownloadEmail = document.getElementById('btn-download-email');
     if (btnDownloadEmail) btnDownloadEmail.addEventListener('click', actionDownloadEmailHtml);
     const btnAddTable = document.getElementById('btn-add-table');
-    if (btnAddTable) btnAddTable.addEventListener('click', actionAddTable);
+    if (btnAddTable) btnAddTable.addEventListener('click', actionOpenTemplatePicker);
+    const btnCancelTemplate = document.getElementById('btn-cancel-template');
+    if (btnCancelTemplate) btnCancelTemplate.addEventListener('click', actionCloseTemplatePicker);
+
+    // Per-table color pickers
+    app.querySelectorAll('input[data-table-color]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        actionSetTableColor(inp.getAttribute('data-table-color'), inp.getAttribute('data-color-field'), e.target.value);
+      });
+    });
 
     // Simple field inputs (data-path)
     app.querySelectorAll('input[data-path]').forEach(inp => {
@@ -978,6 +1145,12 @@
           const campInp = app.querySelector('input[data-path="campaign"]');
           if (attrInp) attrInp.value = e.target.value;
           if (campInp) campInp.value = e.target.value;
+        }
+        // auto-calculate "Period (days)" from Campaign Period + Campaign End (inclusive of both dates)
+        if (path === 'campaignPeriod' || path === 'campaignEnd') {
+          cur.periodDays = computePeriodDays(cur.campaignPeriod, cur.campaignEnd);
+          const periodInp = app.querySelector('input[data-path="periodDays"]');
+          if (periodInp) periodInp.value = cur.periodDays;
         }
         // colors are baked into many inline styles at render time, so re-render
         if (path === 'headerColor' || path === 'totalColor') {
@@ -1065,9 +1238,11 @@
         else if (action === 'set-mode') actionSetTableMode(tableId, btn.getAttribute('data-mode'));
         else if (action === 'add-bullet') actionAddBullet(btn.getAttribute('data-field'));
         else if (action === 'remove-bullet') actionRemoveBullet(btn.getAttribute('data-field'), parseInt(btn.getAttribute('data-idx'), 10));
+        else if (action === 'add-table') actionAddTable(btn.getAttribute('data-template'));
         else if (action === 'set-preset') {
           cur.headerColor = btn.getAttribute('data-header');
           cur.totalColor = btn.getAttribute('data-total');
+          cur.tables.forEach(t => { t.headerColor = cur.headerColor; t.totalColor = cur.totalColor; });
           scheduleSave();
           render();
         }
