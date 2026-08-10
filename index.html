@@ -343,8 +343,9 @@
       label: 'Destination Properties',
       title: 'Destination Properties',
       headerColor: FIXED_HEADER_COLOR,
-      totalColor: FIXED_TOTAL_COLOR,
-      rowAccentColor: FIXED_ACCENT_COLOR,
+      totalColor: '#BFDBFE',
+      rowAccentColor: '',
+      noStripe: true,
       columns: [
         { key: 'month', label: 'Month', merge: true },
         { key: 'destination', label: 'Destination / Properties' },
@@ -471,6 +472,7 @@
       totalColor: tpl.totalColor,
       rowAccentColor: tpl.rowAccentColor || '',
       fixedWidths: !!tpl.fixedWidths,
+      noStripe: !!tpl.noStripe,
       rows: tpl.rows(tpl.columns)
     };
   }
@@ -901,7 +903,7 @@
             let rowBg = '';
             if (row.isTotal) rowBg = totalBg;
             else if (t.rowAccentColor) rowBg = t.rowAccentColor;
-            else if (rIdx % 2 === 1) rowBg = FIXED_STRIPE_COLOR;
+            else if (!t.noStripe && rIdx % 2 === 1) rowBg = FIXED_STRIPE_COLOR;
             return `
             <tr${rowBg ? ` style="background:${rowBg};"` : ''}>
               ${cols.map(c => {
@@ -1255,7 +1257,7 @@
       let rowBg = '';
       if (row.isTotal) rowBg = totalBg;
       else if (t.rowAccentColor) rowBg = t.rowAccentColor;
-      else if (rIdx % 2 === 1) rowBg = FIXED_STRIPE_COLOR;
+      else if (!t.noStripe && rIdx % 2 === 1) rowBg = FIXED_STRIPE_COLOR;
       return `
       <tr class="${row.isTotal ? 'total-row' : ''}" ${rowBg ? `style="background:${rowBg};"` : ''}>
         ${cols.map(c => {
