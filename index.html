@@ -205,7 +205,7 @@
     background: var(--row-header-color, var(--header-dark)); color: var(--row-header-text, #fff); font-size: 11.5px; letter-spacing: 0.03em;
     text-transform: uppercase; padding: 12px 16px; text-align: center; white-space: nowrap; font-weight: 600;
   }
-  table.perf td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; }
+  table.perf td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; vertical-align: middle; }
   table.perf tr.total-row td { background: var(--row-total-color, var(--total-bg)); font-weight: 700; }
   table.perf input.cell-input {
     width: 100%; min-width: 90px; border: none; background: transparent; text-align: center;
@@ -235,6 +235,19 @@
   .add-row-btn:hover, .add-table-btn:hover { background: #EEF2F7; }
   .add-table-btn { display: block; margin: 0 auto 24px; }
   .paste-hint { font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+
+  .paste-box {
+    background: #fff; border: 1px solid var(--accent-brand); border-radius: 7px;
+    padding: 12px; margin-bottom: 10px;
+  }
+  .paste-box-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .paste-box textarea {
+    width: 100%; min-height: 90px; border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px; font-family: var(--font-mono); font-size: 12.5px; color: var(--text);
+    resize: vertical; outline: none;
+  }
+  .paste-box textarea:focus { border-color: var(--accent-brand); }
+  .paste-box-actions { display: flex; gap: 8px; margin-top: 8px; }
 
   /* ---------- Summary / bullets ---------- */
   .summary-heading { font-size: 15px; font-weight: 700; margin: 26px 0 8px; }
@@ -311,7 +324,7 @@
       totalColor: '#D9D9D9',
       rowAccentColor: '#E2EFDA',
       columns: [
-        { key: 'month', label: 'Month' },
+        { key: 'month', label: 'Month', merge: true },
         { key: 'destination', label: 'Destination / Properties' },
         { key: 'spending', label: 'Spending' },
         { key: 'bookings', label: 'Bookings' },
@@ -391,6 +404,7 @@
   let toastTimer = null;
   let showEmailPreview = false;
   let showTemplatePicker = false;
+  let openPasteTables = new Set();
 
   function uid(prefix) {
     return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -627,6 +641,53 @@
     scheduleSave();
     render();
   }
+  function actionTogglePasteBox(tableId) {
+    if (openPasteTables.has(tableId)) openPasteTables.delete(tableId);
+    else openPasteTables.add(tableId);
+    render();
+  }
+  function actionCancelPasteBox(tableId) {
+    openPasteTables.delete(tableId);
+    render();
+  }
+  function actionApplyPasteBox(tableId) {
+    const cur = getReport();
+    const t = cur.tables.find(t => t.id === tableId);
+    if (!t) return;
+    const textarea = app.querySelector(`textarea[data-paste-table="${tableId}"]`);
+    if (!textarea) return;
+    const raw = textarea.value;
+    if (!raw || !raw.trim()) {
+      openPasteTables.delete(tableId);
+      render();
+      return;
+    }
+    const cols = tableColumns(t);
+    let lines = raw.replace(/\r/g, '').split('\n').filter((line, idx, arr) => !(idx === arr.length - 1 && line.trim() === ''));
+    if (lines.length === 0) return;
+
+    // detect + skip a pasted header row (first cell matches the first column's label, case-insensitive)
+    const firstLineFirstCell = (lines[0].split('\t')[0] || '').trim().toLowerCase();
+    if (cols.length && firstLineFirstCell === cols[0].label.trim().toLowerCase()) {
+      lines = lines.slice(1);
+    }
+
+    lines.forEach((line, rIdx) => {
+      const values = line.split('\t');
+      while (t.rows.length <= rIdx) {
+        t.rows.push(blankRow(cols));
+      }
+      const targetRow = t.rows[rIdx];
+      values.forEach((val, cIdx) => {
+        const col = cols[cIdx];
+        if (col) targetRow.cells[col.key] = val.trim();
+      });
+    });
+
+    openPasteTables.delete(tableId);
+    scheduleSave();
+    render();
+  }
   function actionSetTableMode(tableId, mode) {
     const cur = getReport();
     const t = cur.tables.find(t => t.id === tableId);
@@ -637,7 +698,10 @@
   function actionAddRow(tableId) {
     const cur = getReport();
     const t = cur.tables.find(t => t.id === tableId);
-    t.rows.push(blankRow(tableColumns(t)));
+    const newRow = blankRow(tableColumns(t));
+    const firstTotalIdx = t.rows.findIndex(r => r.isTotal);
+    if (firstTotalIdx === -1) t.rows.push(newRow);
+    else t.rows.splice(firstTotalIdx, 0, newRow);
     scheduleSave();
     render();
   }
@@ -1025,11 +1089,35 @@
     const headerText = contrastColor(headerBg);
     const totalBg = t.totalColor || report.totalColor || '#FCE9A8';
     const tplLabel = (TEMPLATES[t.template] || TEMPLATES.standard).label;
-    const rowsHtml = t.rows.map(row => `
+
+    // compute rowspans for any column flagged `merge: true` (e.g. Month in Destination Properties):
+    // contiguous non-total rows share one vertically-centered cell; each total row keeps its own cell.
+    const mergeSpans = {}; // colKey -> { rowIndex: {span, show} }
+    cols.forEach(c => {
+      if (!c.merge) return;
+      const spans = {};
+      let i = 0;
+      while (i < t.rows.length) {
+        if (t.rows[i].isTotal) { spans[i] = { span: 1, show: true }; i++; continue; }
+        let j = i;
+        while (j < t.rows.length && !t.rows[j].isTotal) j++;
+        spans[i] = { span: j - i, show: true };
+        for (let k = i + 1; k < j; k++) spans[k] = { span: 1, show: false };
+        i = j;
+      }
+      mergeSpans[c.key] = spans;
+    });
+
+    const rowsHtml = t.rows.map((row, rIdx) => `
       <tr class="${row.isTotal ? 'total-row' : ''}" ${row.isTotal ? `style="--row-total-color:${totalBg};"` : (t.rowAccentColor ? `style="background:${t.rowAccentColor};"` : '')}>
-        ${cols.map(c => `
-          <td><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>
-        `).join('')}
+        ${cols.map(c => {
+          if (c.merge) {
+            const span = mergeSpans[c.key][rIdx];
+            if (!span.show) return '';
+            return `<td ${span.span > 1 ? `rowspan="${span.span}"` : ''}><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
+          }
+          return `<td><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
+        }).join('')}
         <td class="row-actions">
           <button class="row-btn total-toggle ${row.isTotal ? 'active' : ''}" data-action="toggle-total" data-table="${t.id}" data-row="${row.id}" title="Mark as TOTAL row">TOTAL</button>
           <button class="row-btn" data-action="remove-row" data-table="${t.id}" data-row="${row.id}" title="Remove row">\u2715</button>
@@ -1048,11 +1136,25 @@
           </div>
           <label class="color-pick-label" title="Header color for this table">Hdr <input type="color" data-table-color="${t.id}" data-color-field="headerColor" value="${headerBg}" /></label>
           <label class="color-pick-label" title="Total row color for this table">Tot <input type="color" data-table-color="${t.id}" data-color-field="totalColor" value="${totalBg}" /></label>
+          <button class="icon-btn" data-action="toggle-pastebox" data-table="${t.id}">${openPasteTables.has(t.id) ? 'Close paste box' : '\ud83d\udccb Paste from Excel/Sheets'}</button>
           <button class="icon-btn" data-action="remove-table" data-table="${t.id}" title="Remove this table">Remove table</button>
         </div>
 
+        ${openPasteTables.has(t.id) ? `
+          <div class="paste-box">
+            <div class="paste-box-label">Paste rows copied from Excel or Google Sheets below (columns in this order: ${cols.map(c => escapeHtml(c.label)).join(' | ')}). A pasted header row is detected and skipped automatically.</div>
+            <textarea data-paste-table="${t.id}" placeholder="${cols.map(c => c.label).join('\t')}
+June	1234	...
+July	2345	..."></textarea>
+            <div class="paste-box-actions">
+              <button class="tb-btn primary" data-action="apply-paste" data-table="${t.id}">Fill table</button>
+              <button class="tb-btn" data-action="cancel-paste" data-table="${t.id}">Cancel</button>
+            </div>
+          </div>
+        ` : ''}
+
         ${t.mode === 'manual' ? `
-          <div class="paste-hint">Tip: copy a range of cells from Excel or Google Sheets, click into any cell below, then paste (Ctrl/Cmd+V) to fill the whole block at once.</div>
+          <div class="paste-hint">Tip: use the "Paste from Excel/Sheets" button above to fill many cells at once — pasting directly into a cell may not work in all environments.</div>
           <div class="table-scroll">
             <table class="perf">
               <thead>
@@ -1242,6 +1344,9 @@
         else if (action === 'add-bullet') actionAddBullet(btn.getAttribute('data-field'));
         else if (action === 'remove-bullet') actionRemoveBullet(btn.getAttribute('data-field'), parseInt(btn.getAttribute('data-idx'), 10));
         else if (action === 'add-table') actionAddTable(btn.getAttribute('data-template'));
+        else if (action === 'toggle-pastebox') actionTogglePasteBox(tableId);
+        else if (action === 'cancel-paste') actionCancelPasteBox(tableId);
+        else if (action === 'apply-paste') actionApplyPasteBox(tableId);
         else if (action === 'set-preset') {
           cur.headerColor = btn.getAttribute('data-header');
           cur.totalColor = btn.getAttribute('data-total');
