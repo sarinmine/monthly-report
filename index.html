@@ -250,7 +250,7 @@
   .bullet-row .row-btn { flex-shrink: 0; }
 
   .dest-summary-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-  .dest-substep-label { font-style: italic; font-weight: 600; font-size: 14px; margin: 16px 0 6px; }
+  .dest-substep-label { font-style: italic; font-weight: 400; font-size: 14px; margin: 16px 0 6px; }
   .dest-summary-row b { min-width: 90px; flex-shrink: 0; font-size: 14px; }
   .dest-summary-row .line-input { flex: 1; }
 
@@ -943,35 +943,50 @@
     let bodyHtml;
     if (r.tabType === 'corporate') {
       const destItems = DEST_LABELS.filter(d => r.destSummaries && r.destSummaries[d.key] && r.destSummaries[d.key].trim());
+      const hasPerfSummary = (r.perfSummaryBullets || []).some(b => b.trim());
+      const hasOverallHighlights = (r.overallKeyHighlights || []).some(b => b.trim());
+      const nextStepDests = DEST_LABELS.filter(d => (r[nextStepFieldFor(d.key)] || []).some(b => b.trim()));
+      const hasBrand = (r.brandSummaryNote && r.brandSummaryNote.trim()) || (r.brandBullets || []).some(b => b.trim());
+
       bodyHtml = `
+        ${hasPerfSummary ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:8px 0 8px 0;">${eesc(r.perfSummaryMonth)} Performance Summary :</td></tr>
-        <tr><td style="padding:0 0 6px 0;">${bulletList(r.perfSummaryBullets, FF)}</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.perfSummaryBullets, FF)}</td></tr>` : ''}
+        ${destItems.length > 0 ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Destination Performance Summary :</td></tr>
         <tr><td style="padding:0 0 6px 0;">
           <ul style="${FF}font-size:14px;color:#1a1f27;margin:0 0 6px;padding-left:20px;">
             ${destItems.map(d => `<li style="margin-bottom:5px;line-height:1.6;"><b>${eesc(d.label)}</b> ${eesc(r.destSummaries[d.key])}</li>`).join('')}
           </ul>
-        </td></tr>
+        </td></tr>` : ''}
+        ${hasOverallHighlights ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Overall Key Highlights :</td></tr>
-        <tr><td style="padding:0 0 6px 0;">${bulletList(r.overallKeyHighlights, FF)}</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.overallKeyHighlights, FF)}</td></tr>` : ''}
+        ${nextStepDests.length > 0 ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
-        ${DEST_LABELS.map(d => `
-          <tr><td style="font-style:italic;font-weight:bold;padding:10px 0 2px 0;">${eesc(d.label)}</td></tr>
+        ${nextStepDests.map(d => `
+          <tr><td style="font-style:italic;font-weight:normal;padding:10px 0 2px 0;">${eesc(d.label)}</td></tr>
           <tr><td style="padding:0 0 6px 0;">${bulletList(r[nextStepFieldFor(d.key)], FF)}</td></tr>
-        `).join('')}
-        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Additional Details :</td></tr>
+        `).join('')}` : ''}
+        ${hasBrand ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Brand Performance Summary : ${eesc(r.brandSummaryNote)}</td></tr>
-        <tr><td style="padding:0 0 6px 0;">${bulletList(r.brandBullets, FF)}</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.brandBullets, FF)}</td></tr>` : ''}
       `;
     } else {
+      const hasSummary = (r.monthRevenue && r.monthRevenue.trim()) || (r.allTimeRevenue && r.allTimeRevenue.trim());
+      const hasKeyHighlights = (r.keyHighlights || []).some(v => v.trim());
+      const hasNextSteps = (r.nextSteps || []).some(v => v.trim());
       const hasOthers = (r.others || []).some(o => o.trim());
       bodyHtml = `
+        ${hasSummary ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:8px 0 8px 0;">Summary of ${eesc(summaryMonthLabel)} what happened?</td></tr>
-        <tr><td style="padding:0 0 6px 0;">${summaryBullets}</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${summaryBullets}</td></tr>` : ''}
+        ${hasKeyHighlights ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Key Highlights :</td></tr>
-        <tr><td style="padding:0 0 6px 0;">${bulletList(r.keyHighlights, FF)}</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.keyHighlights, FF)}</td></tr>` : ''}
+        ${hasNextSteps ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
-        <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps, FF)}</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps, FF)}</td></tr>` : ''}
         ${hasOthers ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Others :</td></tr>
         <tr><td style="padding:0 0 6px 0;">${bulletList(r.others, FF)}</td></tr>` : ''}
