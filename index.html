@@ -250,6 +250,7 @@
   .bullet-row .row-btn { flex-shrink: 0; }
 
   .dest-summary-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .dest-substep-label { font-style: italic; font-weight: 600; font-size: 14px; margin: 16px 0 6px; }
   .dest-summary-row b { min-width: 90px; flex-shrink: 0; font-size: 14px; }
   .dest-summary-row .line-input { flex: 1; }
 
@@ -310,6 +311,9 @@
     { key: 'srilanka', label: 'Sri Lanka' },
     { key: 'restOfAsia', label: 'Rest of Asia' }
   ];
+  function nextStepFieldFor(destKey) {
+    return 'nextSteps_' + destKey;
+  }
 
   // unified brand color — all tables share this, no per-table color picker
   const FIXED_HEADER_COLOR = '#1F2A44';
@@ -517,6 +521,7 @@
       base.perfSummaryBullets = [''];
       base.destSummaries = { thailand: '', china: '', maldives: '', vietnam: '', srilanka: '', restOfAsia: '' };
       base.overallKeyHighlights = [''];
+      DEST_LABELS.forEach(d => { base[nextStepFieldFor(d.key)] = ['']; });
       base.brandSummaryNote = '';
       base.brandBullets = [''];
     }
@@ -950,7 +955,10 @@
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Overall Key Highlights :</td></tr>
         <tr><td style="padding:0 0 6px 0;">${bulletList(r.overallKeyHighlights, FF)}</td></tr>
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
-        <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps, FF)}</td></tr>
+        ${DEST_LABELS.map(d => `
+          <tr><td style="font-style:italic;font-weight:bold;padding:10px 0 2px 0;">${eesc(d.label)}</td></tr>
+          <tr><td style="padding:0 0 6px 0;">${bulletList(r[nextStepFieldFor(d.key)], FF)}</td></tr>
+        `).join('')}
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Additional Details :</td></tr>
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Brand Performance Summary : ${eesc(r.brandSummaryNote)}</td></tr>
         <tr><td style="padding:0 0 6px 0;">${bulletList(r.brandBullets, FF)}</td></tr>
@@ -1230,7 +1238,10 @@
       ${renderBulletEditor(cur.overallKeyHighlights, 'overallKeyHighlights')}
 
       <h2 class="summary-heading">Next Step :</h2>
-      ${renderBulletEditor(cur.nextSteps, 'nextSteps')}
+      ${DEST_LABELS.map(d => `
+        <p class="dest-substep-label">${escapeHtml(d.label)}</p>
+        ${renderBulletEditor(cur[nextStepFieldFor(d.key)], nextStepFieldFor(d.key))}
+      `).join('')}
 
       <h2 class="summary-heading">Additional Details :</h2>
 
