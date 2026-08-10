@@ -516,6 +516,7 @@
       base.perfSummaryMonth = '';
       base.perfSummaryBullets = [''];
       base.destSummaries = { thailand: '', china: '', maldives: '', vietnam: '', srilanka: '', restOfAsia: '' };
+      base.overallKeyHighlights = [''];
       base.brandSummaryNote = '';
       base.brandBullets = [''];
     }
@@ -946,6 +947,8 @@
             ${destItems.map(d => `<li style="margin-bottom:5px;line-height:1.6;"><b>${eesc(d.label)}</b> ${eesc(r.destSummaries[d.key])}</li>`).join('')}
           </ul>
         </td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Overall Key Highlights :</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.overallKeyHighlights, FF)}</td></tr>
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
         <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps, FF)}</td></tr>
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Additional Details :</td></tr>
@@ -1222,6 +1225,9 @@
           </div>
         `).join('')}
       </div>
+
+      <h2 class="summary-heading">Overall Key Highlights :</h2>
+      ${renderBulletEditor(cur.overallKeyHighlights, 'overallKeyHighlights')}
 
       <h2 class="summary-heading">Next Step :</h2>
       ${renderBulletEditor(cur.nextSteps, 'nextSteps')}
