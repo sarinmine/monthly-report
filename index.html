@@ -514,6 +514,7 @@
       allTimeRevenue: '',
       keyHighlights: [''],
       nextSteps: [''],
+      othersTitle: 'Others',
       others: ['']
     };
     if (tabKey === 'corporate') {
@@ -988,7 +989,7 @@
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
         <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps, FF)}</td></tr>` : ''}
         ${hasOthers ? `
-        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Others :</td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">${eesc(r.othersTitle && r.othersTitle.trim() ? r.othersTitle.trim() : 'Others')} :</td></tr>
         <tr><td style="padding:0 0 6px 0;">${bulletList(r.others, FF)}</td></tr>` : ''}
       `;
     }
@@ -1227,7 +1228,7 @@
       <h2 class="summary-heading">Next Step :</h2>
       ${renderBulletEditor(cur.nextSteps, 'nextSteps')}
 
-      <h2 class="summary-heading">Others :</h2>
+      <h2 class="summary-heading"><input class="line-input" style="font-weight:700;" data-path="othersTitle" placeholder="Others" value="${escapeHtml(cur.othersTitle)}" /> :</h2>
       ${renderBulletEditor(cur.others, 'others')}
     `;
   }
