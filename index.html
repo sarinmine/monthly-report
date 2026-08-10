@@ -1052,7 +1052,7 @@
         </div>
 
         ${t.mode === 'manual' ? `
-          <div class="paste-hint">Tip: copy a range from Excel or Google Sheets and paste into any cell below to fill it all at once.</div>
+          <div class="paste-hint">Tip: copy a range of cells from Excel or Google Sheets, click into any cell below, then paste (Ctrl/Cmd+V) to fill the whole block at once.</div>
           <div class="table-scroll">
             <table class="perf">
               <thead>
@@ -1196,19 +1196,20 @@
         e.preventDefault();
 
         const t = cur.tables.find(t => t.id === inp.getAttribute('data-table'));
+        const cols = tableColumns(t);
         const startRowIdx = t.rows.findIndex(r => r.id === inp.getAttribute('data-row'));
-        const startColIdx = COLUMNS.findIndex(c => c.key === inp.getAttribute('data-cell'));
+        const startColIdx = cols.findIndex(c => c.key === inp.getAttribute('data-cell'));
         if (startRowIdx === -1 || startColIdx === -1) return;
 
         const pastedRows = text.replace(/\r/g, '').split('\n').filter((line, idx, arr) => !(idx === arr.length - 1 && line === ''));
         pastedRows.forEach((line, rOffset) => {
           const values = line.split('\t');
           while (t.rows.length <= startRowIdx + rOffset) {
-            t.rows.push(blankRow());
+            t.rows.push(blankRow(cols));
           }
           const targetRow = t.rows[startRowIdx + rOffset];
           values.forEach((val, cOffset) => {
-            const col = COLUMNS[startColIdx + cOffset];
+            const col = cols[startColIdx + cOffset];
             if (col) targetRow.cells[col.key] = val.trim();
           });
         });
