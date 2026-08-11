@@ -197,19 +197,19 @@
   .icon-btn:hover { color: var(--danger); border-color: #FCA5A5; background: #FEF2F2; }
 
   .table-scroll { overflow-x: auto; }
-  table.perf { border-collapse: collapse; width: 100%; min-width: 1100px; }
-  table.perf.fixed-cols { table-layout: fixed; min-width: 1880px; }
+  table.perf { border-collapse: collapse; width: 100%; }
+  table.perf.fixed-cols { table-layout: fixed; }
   table.perf th {
     background: var(--row-header-color, var(--header-dark)); color: var(--row-header-text, #fff); font-size: 12px; letter-spacing: 0.01em;
-    padding: 12px 16px; text-align: center; white-space: nowrap; font-weight: 600;
+    padding: 12px 10px; text-align: center; white-space: nowrap; font-weight: 600;
   }
   table.perf.fixed-cols th {
-    white-space: normal; word-break: break-word; line-height: 1.3; padding: 12px 8px; font-size: 12px;
+    white-space: normal; word-break: break-word; line-height: 1.3; padding: 10px 6px; font-size: 12px;
   }
-  table.perf td { padding: 10px 16px; border: 1px solid var(--border); text-align: center; vertical-align: middle; }
+  table.perf td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; vertical-align: middle; }
   table.perf tr.total-row td { background: var(--row-total-color, var(--total-bg)); font-weight: 700; }
   table.perf input.cell-input {
-    width: 100%; min-width: 90px; border: none; background: transparent; text-align: center;
+    width: 100%; min-width: 60px; border: none; background: transparent; text-align: center;
     font-size: 13.5px; padding: 8px 4px; outline: none; font-family: var(--font-body); color: var(--text);
   }
   table.perf input.cell-input:focus { background: #EEF2F7; border-radius: 3px; }
@@ -379,19 +379,19 @@
       totalColor: FIXED_TOTAL_COLOR,
       fixedWidths: true,
       columns: [
-        { key: 'month', label: 'Month', width: 130 },
-        { key: 'spending', label: 'Spending', width: 130 },
-        { key: 'impressions', label: 'Impressions', width: 130 },
-        { key: 'cpm', label: 'CPM', width: 130 },
-        { key: 'clicks', label: 'Clicks', width: 130 },
-        { key: 'cpc', label: 'CPC', width: 130 },
-        { key: 'ctr', label: 'CTR', width: 130 },
-        { key: 'newUsers', label: 'New Users', width: 130 },
-        { key: 'returningUsers', label: 'Returning Users', width: 140 },
-        { key: 'sessions', label: 'Sessions', width: 140 },
-        { key: 'engagedSessions', label: 'Engaged Sessions', width: 140 },
-        { key: 'engagementRate', label: 'Engagement Rate', width: 140 },
-        { key: 'avgEngagementTime', label: 'Avg. Engagement Time / Session (Sec)', width: 280 }
+        { key: 'month', label: 'Month', width: 90 },
+        { key: 'spending', label: 'Spending', width: 90 },
+        { key: 'impressions', label: 'Impressions', width: 90 },
+        { key: 'cpm', label: 'CPM', width: 90 },
+        { key: 'clicks', label: 'Clicks', width: 90 },
+        { key: 'cpc', label: 'CPC', width: 90 },
+        { key: 'ctr', label: 'CTR', width: 90 },
+        { key: 'newUsers', label: 'New Users', width: 90 },
+        { key: 'returningUsers', label: 'Returning Users', width: 100 },
+        { key: 'sessions', label: 'Sessions', width: 100 },
+        { key: 'engagedSessions', label: 'Engaged Sessions', width: 100 },
+        { key: 'engagementRate', label: 'Engagement Rate', width: 100 },
+        { key: 'avgEngagementTime', label: 'Avg. Engagement Time / Session (Sec)', width: 200 }
       ],
       rows: (cols) => [
         ...['January', 'February', 'March', 'April', 'May', 'June', 'July'].map(m => rowWith(cols, { month: m })),
@@ -405,20 +405,20 @@
       totalColor: FIXED_TOTAL_COLOR,
       fixedWidths: true,
       columns: [
-        { key: 'month', label: 'Month', width: 130 },
-        { key: 'spending', label: 'Spending', width: 130 },
-        { key: 'impressions', label: 'Impressions', width: 130 },
-        { key: 'cpm', label: 'CPM', width: 130 },
-        { key: 'clicks', label: 'Clicks', width: 130 },
-        { key: 'cpc', label: 'CPC', width: 130 },
-        { key: 'ctr', label: 'CTR', width: 130 },
-        { key: 'bookings', label: 'Bookings', width: 130 },
-        { key: 'cpa', label: 'CPA', width: 140 },
-        { key: 'cvr', label: 'CVR', width: 140 },
-        { key: 'abv', label: 'ABV', width: 140 },
-        { key: 'revenue', label: 'Revenue', width: 140 },
-        { key: 'roomNights', label: 'Room Nights', width: 140 },
-        { key: 'roas', label: 'ROAS', width: 140 }
+        { key: 'month', label: 'Month', width: 90 },
+        { key: 'spending', label: 'Spending', width: 90 },
+        { key: 'impressions', label: 'Impressions', width: 90 },
+        { key: 'cpm', label: 'CPM', width: 90 },
+        { key: 'clicks', label: 'Clicks', width: 90 },
+        { key: 'cpc', label: 'CPC', width: 90 },
+        { key: 'ctr', label: 'CTR', width: 90 },
+        { key: 'bookings', label: 'Bookings', width: 90 },
+        { key: 'cpa', label: 'CPA', width: 100 },
+        { key: 'cvr', label: 'CVR', width: 100 },
+        { key: 'abv', label: 'ABV', width: 100 },
+        { key: 'revenue', label: 'Revenue', width: 100 },
+        { key: 'roomNights', label: 'Room Nights', width: 100 },
+        { key: 'roas', label: 'ROAS', width: 100 }
       ],
       rows: (cols) => [
         ...['January', 'February', 'March', 'April', 'May', 'June', 'July'].map(m => rowWith(cols, { month: m })),
@@ -897,7 +897,7 @@
       const totalBg = t.totalColor || FIXED_TOTAL_COLOR;
       const tableStyle = t.fixedWidths
         ? 'border-collapse:collapse;width:100%;margin-bottom:18px;table-layout:fixed;'
-        : 'border-collapse:collapse;width:100%;margin-bottom:18px;';
+        : `border-collapse:collapse;width:${cols.length * 90}px;margin-bottom:18px;`;
 
       const mergeSpans = {};
       cols.forEach(c => {
@@ -918,7 +918,7 @@
       return `
         <table role="presentation" cellpadding="12" cellspacing="0" border="1" bordercolor="#E5E7EB" style="${tableStyle}${FF}">
           <tr>
-            ${cols.map(c => `<td style="${c.width ? `width:${c.width}px;` : ''}background:${headerBg};color:${headerText};font-size:${c.width ? '12px' : '12.5px'};font-weight:bold;text-align:center;${c.width ? 'white-space:normal;word-break:break-word;line-height:1.3;' : 'white-space:nowrap;'}padding:${c.width ? '12px 8px' : '12px 16px'};">${eesc(c.label)}</td>`).join('')}
+            ${cols.map(c => `<td style="${c.width ? `width:${c.width}px;` : ''}background:${headerBg};color:${headerText};font-size:${c.width ? '12px' : '12.5px'};font-weight:bold;text-align:center;${c.width ? 'white-space:normal;word-break:break-word;line-height:1.3;' : 'white-space:nowrap;'}padding:${c.width ? '10px 6px' : '12px 16px'};">${eesc(c.label)}</td>`).join('')}
           </tr>
           ${rows.map((row, rIdx) => {
             let rowBg = '';
@@ -928,7 +928,7 @@
             return `
             <tr${rowBg ? ` style="background:${rowBg};"` : ''}>
               ${cols.map(c => {
-                const cellStyle = `${c.width ? `width:${c.width}px;` : ''}font-size:13.5px;text-align:center;vertical-align:middle;white-space:nowrap;padding:10px 16px;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;`;
+                const cellStyle = `${c.width ? `width:${c.width}px;` : ''}font-size:13.5px;text-align:center;vertical-align:middle;white-space:nowrap;padding:10px 14px;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;`;
                 if (c.merge) {
                   const span = mergeSpans[c.key][rIdx];
                   if (!span.show) return '';
@@ -1333,7 +1333,7 @@
         </div>
 
         <div class="table-scroll">
-          <table class="perf ${t.fixedWidths ? 'fixed-cols' : ''}">
+          <table class="perf ${t.fixedWidths ? 'fixed-cols' : ''}" style="min-width:${t.fixedWidths ? cols.reduce((s, c) => s + (c.width || 100), 0) : cols.length * 90}px;">
             <thead>
               <tr style="--row-header-color:${headerBg};--row-header-text:${headerText};">
                 ${cols.map(c => `<th ${c.width ? `style="width:${c.width}px;"` : ''}>${c.label}</th>`).join('')}
