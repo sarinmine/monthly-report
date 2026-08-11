@@ -866,6 +866,16 @@
     const summaryMonthLabel = r.summaryMonth && r.summaryMonth.trim() ? r.summaryMonth.trim() : '';
     const budgetDisplay = (r.budgetAmount && r.budgetAmount.trim()) ? `${eesc(r.budgetCurrency || '')} ${eesc(r.budgetAmount)}`.trim() : '';
 
+    // Match the overall content width to the widest table in this report, so the greeting/
+    // details section doesn't look narrow/cramped next to much wider data tables (e.g. the
+    // Branding/Conversion tables, which sum to 1880px of fixed column widths).
+    const estimateTableWidth = (t) => {
+      const cols = t.columns || DEFAULT_COLUMNS;
+      if (t.fixedWidths) return cols.reduce((sum, c) => sum + (c.width || 100), 0);
+      return 1100;
+    };
+    const contentWidth = Math.max(1000, ...(r.tables || []).map(estimateTableWidth));
+
     const detailRow = (label, valueHtml) => `
       <tr>
         <td width="230" style="${FF}font-size:14px;font-weight:bold;color:#1a1f27;padding:3px 10px 3px 0;vertical-align:top;white-space:nowrap;width:230px;">${eesc(label)}</td>
@@ -873,7 +883,7 @@
       </tr>`;
 
     const detailsTable = `
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;table-layout:fixed;">
+      <table role="presentation" width="${contentWidth}" cellpadding="0" cellspacing="0" border="0" style="width:${contentWidth}px;border-collapse:collapse;table-layout:fixed;">
         ${detailRow('Campaign:', eesc(r.campaign))}
         ${detailRow('Campaign Period:', eesc(formatDisplayDate(r.campaignPeriod)))}
         ${detailRow('Campaign End:', eesc(formatDisplayDate(r.campaignEnd)))}
@@ -1003,7 +1013,7 @@
     }
 
     return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;${FF}font-size:14px;color:#1a1f27;">
+<table role="presentation" width="${contentWidth}" cellpadding="0" cellspacing="0" border="0" style="width:${contentWidth}px;${FF}font-size:14px;color:#1a1f27;">
   <tr><td style="padding:0 0 10px 0;">Dear Khun ${eesc(r.dearName)},</td></tr>
   <tr><td style="padding:0 0 10px 0;">I hope you are doing well.</td></tr>
   <tr><td style="padding:0 0 18px 0;">Please find below details for ${eesc(r.attributionFor)} attribution report as of ${eesc(formatDisplayDate(r.asOfDate))}.</td></tr>
@@ -1014,7 +1024,7 @@
   <tr><td>${tablesHtml}</td></tr>
   ${bodyHtml}
   <tr><td style="padding:18px 0 14px 0;">
-    <table role="presentation" cellpadding="10" cellspacing="0" border="0" style="background:#FEF9E7;border:1px solid #F5E6A8;border-collapse:collapse;width:100%;">
+    <table role="presentation" width="${contentWidth}" cellpadding="10" cellspacing="0" border="0" style="background:#FEF9E7;border:1px solid #F5E6A8;border-collapse:collapse;width:${contentWidth}px;">
       <tr><td style="font-size:12.5px;color:#6B5A00;${FF}">*Note on Data Attribution: Please note that attribution data may continue to update within a 7&ndash;30 day attribution window following the initial report date. As the platform continues processing attribution signals and user journey reconciliation, additional bookings and revenue may be attributed back to the original reporting period in subsequent exports.</td></tr>
     </table>
   </td></tr>
