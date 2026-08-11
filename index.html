@@ -438,7 +438,6 @@
   let toastTimer = null;
   let showEmailPreview = false;
   let showTemplatePicker = false;
-  let pendingUndoSnapshot = null;
 
   function uid(prefix) {
     return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -589,11 +588,13 @@
     return div.innerHTML;
   }
 
+  const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
   function formatDisplayDate(iso) {
     if (!iso) return '';
     const d = new Date(iso + 'T00:00:00');
     if (isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return `${d.getDate()} ${MONTH_ABBR[d.getMonth()]} ${d.getFullYear()}`;
   }
 
   function computePeriodDays(startIso, endIso) {
@@ -628,6 +629,27 @@
     const stack = undoStackByTab[activeTab];
     stack.push(snap);
     if (stack.length > 50) stack.shift();
+    // any explicit structural checkpoint should force the next keystroke-based edit
+    // (see maybeCheckpointInput) to start a fresh undo step rather than merging into
+    // whatever text field was being typed in before this action ran.
+    lastUndoInputKey = null;
+  }
+
+  let lastUndoInputKey = null;
+  let lastUndoInputTime = 0;
+  const UNDO_DEBOUNCE_MS = 700;
+
+  // Called from every plain text/number/select field BEFORE the new value is applied.
+  // Groups rapid keystrokes into the same field into a single undo step, but starts a
+  // fresh step once the user moves to a different field or pauses for a while — independent
+  // of any DOM focus/blur timing, so it isn't affected by re-renders happening elsewhere.
+  function maybeCheckpointInput(uniqueKey) {
+    const now = Date.now();
+    if (uniqueKey !== lastUndoInputKey || now - lastUndoInputTime > UNDO_DEBOUNCE_MS) {
+      pushUndoSnapshot();
+      lastUndoInputKey = uniqueKey; // pushUndoSnapshot() resets this to null, so set it after
+    }
+    lastUndoInputTime = now;
   }
 
   function performUndo() {
@@ -640,7 +662,7 @@
     const data = JSON.parse(snap);
     reportsByTab[activeTab] = data.reports;
     currentIdByTab[activeTab] = data.currentId;
-    pendingUndoSnapshot = null;
+    lastUndoInputKey = null;
     scheduleSave();
     render();
   }
@@ -651,24 +673,6 @@
     if (modifierPressed && key === 'z' && !e.shiftKey) {
       e.preventDefault();
       performUndo();
-    }
-  });
-
-  document.addEventListener('focusin', (e) => {
-    if (!app.contains(e.target)) return;
-    if (e.target.matches && e.target.matches('input, textarea, select')) {
-      if (pendingUndoSnapshot === null) {
-        pendingUndoSnapshot = JSON.stringify({ reports: reportsByTab[activeTab], currentId: currentIdByTab[activeTab] });
-      }
-    }
-  });
-  document.addEventListener('focusout', (e) => {
-    if (!app.contains(e.target)) return;
-    if (e.target.matches && e.target.matches('input, textarea, select') && pendingUndoSnapshot !== null) {
-      const stack = undoStackByTab[activeTab];
-      stack.push(pendingUndoSnapshot);
-      if (stack.length > 50) stack.shift();
-      pendingUndoSnapshot = null;
     }
   });
 
@@ -689,8 +693,12 @@
     reportsByTab[activeTab].unshift(r);
     currentIdByTab[activeTab] = r.id;
     pendingDeleteReport = false;
+    // Fully clear the DOM before re-rendering so no stale field values or browser
+    // autofill/restore can linger from the previous report without a manual page refresh.
+    app.innerHTML = '';
     scheduleSave();
     render();
+    try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); }
   }
 
   function actionSelectReport(id) {
@@ -1086,7 +1094,7 @@
     const toolbarHtml = `
       <div class="toolbar">
         <div class="toolbar-brand">PMC Report Generator</div>
-        <select class="report-select" id="report-select">
+        <select autocomplete="off" class="report-select" id="report-select">
           ${currentReports().map(r => `<option value="${r.id}" ${r.id === currentIdByTab[activeTab] ? 'selected' : ''}>${escapeHtml(reportLabel(r))}</option>`).join('')}
         </select>
         <button class="tb-btn primary" id="btn-new">+ New Report</button>
@@ -1099,7 +1107,7 @@
         ` : `<button class="tb-btn danger-btn" id="btn-delete">Delete</button>`}
         <button class="tb-btn" id="btn-export-json">Export JSON</button>
         <button class="tb-btn" id="btn-upload-json">Upload JSON</button>
-        <input type="file" id="json-upload-input" accept="application/json,.json" style="display:none;" />
+        <input autocomplete="off" type="file" id="json-upload-input" accept="application/json,.json" style="display:none;" />
         ${toastMsg ? `<div class="toast-msg${toastMsg.isError ? ' error' : ''}">${escapeHtml(toastMsg.text)}</div>` : ''}
         <button class="tb-btn primary" id="btn-toggle-preview">${showEmailPreview ? 'Hide Email Preview' : 'Copy for Email'}</button>
       </div>
@@ -1130,49 +1138,49 @@
         ${previewHtml}
         <div class="paper">
           <p class="salutation">
-            Dear Khun <input class="line-input wide" data-path="dearName" placeholder="recipient name" value="${escapeHtml(cur.dearName)}" />,
+            Dear Khun <input autocomplete="off" class="line-input wide" data-path="dearName" placeholder="recipient name" value="${escapeHtml(cur.dearName)}" />,
           </p>
           <p class="salutation">I hope you are doing well.</p>
           <p class="salutation">
             Please find below details for
-            <input class="line-input wide" data-path="attributionFor" placeholder="e.g. Anantara Veli Maldives Resort" value="${escapeHtml(cur.attributionFor)}" />
+            <input autocomplete="off" class="line-input wide" data-path="attributionFor" placeholder="e.g. Anantara Veli Maldives Resort" value="${escapeHtml(cur.attributionFor)}" />
             attribution report as of
-            <input type="date" class="line-input date-input" data-path="asOfDate" value="${escapeHtml(cur.asOfDate)}" />.
+            <input autocomplete="off" type="date" class="line-input date-input" data-path="asOfDate" value="${escapeHtml(cur.asOfDate)}" />.
           </p>
 
           <div class="hotel-heading-row">
-            <input class="hotel-heading" data-path="hotelNameBig" placeholder="Hotel Name (Code)" value="${escapeHtml(cur.hotelNameBig)}" />
+            <input autocomplete="off" class="hotel-heading" data-path="hotelNameBig" placeholder="Hotel Name (Code)" value="${escapeHtml(cur.hotelNameBig)}" />
           </div>
           <hr class="divider" />
 
           <div class="detail-grid">
             <div class="detail-label">Campaign:</div>
-            <div><input class="line-input xwide" data-path="campaign" value="${escapeHtml(cur.campaign)}" /></div>
+            <div><input autocomplete="off" class="line-input xwide" data-path="campaign" value="${escapeHtml(cur.campaign)}" /></div>
 
             <div class="detail-label">Campaign Period:</div>
-            <div><input type="date" class="line-input date-input" data-path="campaignPeriod" value="${escapeHtml(cur.campaignPeriod)}" /></div>
+            <div><input autocomplete="off" type="date" class="line-input date-input" data-path="campaignPeriod" value="${escapeHtml(cur.campaignPeriod)}" /></div>
 
             <div class="detail-label">Campaign End:</div>
-            <div><input type="date" class="line-input date-input" data-path="campaignEnd" value="${escapeHtml(cur.campaignEnd)}" /></div>
+            <div><input autocomplete="off" type="date" class="line-input date-input" data-path="campaignEnd" value="${escapeHtml(cur.campaignEnd)}" /></div>
 
             <div class="detail-label">Period (days):</div>
-            <div><input class="line-input" data-path="periodDays" value="${escapeHtml(cur.periodDays)}" readonly title="Auto-calculated from Campaign Period and Campaign End" /></div>
+            <div><input autocomplete="off" class="line-input" data-path="periodDays" value="${escapeHtml(cur.periodDays)}" readonly title="Auto-calculated from Campaign Period and Campaign End" /></div>
 
             <div class="detail-label">Budget:</div>
             <div>
-              <select class="line-input currency-select" data-path="budgetCurrency">
+              <select autocomplete="off" class="line-input currency-select" data-path="budgetCurrency">
                 ${CURRENCIES.map(c => `<option value="${c}" ${(cur.budgetCurrency || 'USD') === c ? 'selected' : ''}>${c}</option>`).join('')}
               </select>
-              <input class="line-input" data-path="budgetAmount" value="${escapeHtml(cur.budgetAmount)}" />
+              <input autocomplete="off" class="line-input" data-path="budgetAmount" value="${escapeHtml(cur.budgetAmount)}" />
             </div>
 
             <div class="detail-label">Report Date:</div>
-            <div><input type="date" class="line-input date-input" data-path="reportDate" value="${escapeHtml(cur.reportDate)}" /></div>
+            <div><input autocomplete="off" type="date" class="line-input date-input" data-path="reportDate" value="${escapeHtml(cur.reportDate)}" /></div>
 
             <div class="detail-label">Monthly Report and Dashboard:</div>
             <div class="link-field-row">
-              <input class="line-input" data-path="dashboardLinkText" placeholder="Link text" value="${escapeHtml(cur.dashboardLinkText)}" />
-              <input class="line-input xwide" data-path="dashboardLinkUrl" placeholder="https://..." value="${escapeHtml(cur.dashboardLinkUrl)}" />
+              <input autocomplete="off" class="line-input" data-path="dashboardLinkText" placeholder="Link text" value="${escapeHtml(cur.dashboardLinkText)}" />
+              <input autocomplete="off" class="line-input xwide" data-path="dashboardLinkUrl" placeholder="https://..." value="${escapeHtml(cur.dashboardLinkUrl)}" />
               ${cur.dashboardLinkUrl ? `<a class="dashboard-link" href="${escapeHtml(cur.dashboardLinkUrl)}" target="_blank" rel="noopener">${escapeHtml(cur.dashboardLinkText || 'Open link')} \u2197</a>` : ''}
             </div>
           </div>
@@ -1215,11 +1223,11 @@
     const summaryMonthLabel = cur.summaryMonth && cur.summaryMonth.trim() ? cur.summaryMonth.trim() : '\u2014';
     return `
       <h2 class="summary-heading">
-        Summary of <input class="line-input" data-path="summaryMonth" placeholder="July 2026" value="${escapeHtml(cur.summaryMonth)}" /> what happened?
+        Summary of <input autocomplete="off" class="line-input" data-path="summaryMonth" placeholder="July 2026" value="${escapeHtml(cur.summaryMonth)}" /> what happened?
       </h2>
       <ul class="bullet-list">
-        <li>${escapeHtml(summaryMonthLabel)} Reported Revenue: <input class="line-input wide" data-path="monthRevenue" placeholder="49,220.95 USD with ROAS 30.39" value="${escapeHtml(cur.monthRevenue)}" /></li>
-        <li>All Time Reported Revenue: <input class="line-input wide" data-path="allTimeRevenue" placeholder="81,358.95 USD with ROAS 33.00" value="${escapeHtml(cur.allTimeRevenue)}" /></li>
+        <li>${escapeHtml(summaryMonthLabel)} Reported Revenue: <input autocomplete="off" class="line-input wide" data-path="monthRevenue" placeholder="USD 49,220.95 with ROAS 30.39" value="${escapeHtml(cur.monthRevenue)}" /></li>
+        <li>All Time Reported Revenue: <input autocomplete="off" class="line-input wide" data-path="allTimeRevenue" placeholder="USD 81,358.95 with ROAS 33.00" value="${escapeHtml(cur.allTimeRevenue)}" /></li>
       </ul>
 
       <h2 class="summary-heading">Key Highlights :</h2>
@@ -1228,7 +1236,7 @@
       <h2 class="summary-heading">Next Step :</h2>
       ${renderBulletEditor(cur.nextSteps, 'nextSteps')}
 
-      <h2 class="summary-heading"><input class="line-input" style="font-weight:700;font-size:15px;" data-path="othersTitle" placeholder="Others" value="${escapeHtml(cur.othersTitle)}" /> :</h2>
+      <h2 class="summary-heading"><input autocomplete="off" class="line-input" style="font-weight:700;font-size:15px;" data-path="othersTitle" placeholder="Others" value="${escapeHtml(cur.othersTitle)}" /> :</h2>
       ${renderBulletEditor(cur.others, 'others')}
     `;
   }
@@ -1236,7 +1244,7 @@
   function renderCorporateBody(cur) {
     return `
       <h2 class="summary-heading">
-        <input class="line-input" data-path="perfSummaryMonth" placeholder="June" value="${escapeHtml(cur.perfSummaryMonth)}" /> Performance Summary :
+        <input autocomplete="off" class="line-input" data-path="perfSummaryMonth" placeholder="June" value="${escapeHtml(cur.perfSummaryMonth)}" /> Performance Summary :
       </h2>
       ${renderBulletEditor(cur.perfSummaryBullets, 'perfSummaryBullets')}
 
@@ -1245,7 +1253,7 @@
         ${DEST_LABELS.map(d => `
           <div class="dest-summary-row">
             <b>${escapeHtml(d.label)}</b>
-            <input class="line-input wide" data-path="destSummaries.${d.key}" placeholder="Describe ${escapeHtml(d.label)} performance..." value="${escapeHtml((cur.destSummaries || {})[d.key])}" />
+            <input autocomplete="off" class="line-input wide" data-path="destSummaries.${d.key}" placeholder="Describe ${escapeHtml(d.label)} performance..." value="${escapeHtml((cur.destSummaries || {})[d.key])}" />
           </div>
         `).join('')}
       </div>
@@ -1261,7 +1269,7 @@
 
       <h2 class="summary-heading">Additional Details :</h2>
 
-      <h2 class="summary-heading">Brand Performance Summary : <input class="line-input wide" data-path="brandSummaryNote" value="${escapeHtml(cur.brandSummaryNote)}" /></h2>
+      <h2 class="summary-heading">Brand Performance Summary : <input autocomplete="off" class="line-input wide" data-path="brandSummaryNote" value="${escapeHtml(cur.brandSummaryNote)}" /></h2>
       ${renderBulletEditor(cur.brandBullets, 'brandBullets')}
     `;
   }
@@ -1301,9 +1309,9 @@
           if (c.merge) {
             const span = mergeSpans[c.key][rIdx];
             if (!span.show) return '';
-            return `<td${widthStyle}${span.span > 1 ? ` rowspan="${span.span}"` : ''}><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
+            return `<td${widthStyle}${span.span > 1 ? ` rowspan="${span.span}"` : ''}><input autocomplete="off" class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
           }
-          return `<td${widthStyle}><input class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
+          return `<td${widthStyle}><input autocomplete="off" class="cell-input" data-table="${t.id}" data-row="${row.id}" data-cell="${c.key}" value="${escapeHtml(row.cells[c.key])}" /></td>`;
         }).join('')}
         <td class="row-actions">
           <button class="row-btn total-toggle ${row.isTotal ? 'active' : ''}" data-action="toggle-total" data-table="${t.id}" data-row="${row.id}" title="Mark as TOTAL row">TOTAL</button>
@@ -1316,7 +1324,7 @@
     return `
       <div class="table-block">
         <div class="table-block-head">
-          <input class="table-title-input" data-table-title="${t.id}" value="${escapeHtml(t.title)}" />
+          <input autocomplete="off" class="table-title-input" data-table-title="${t.id}" value="${escapeHtml(t.title)}" />
           <span class="tpl-badge">${escapeHtml(tplLabel)}</span>
           <button class="icon-btn" data-action="remove-table" data-table="${t.id}" title="Remove this table">Remove table</button>
         </div>
@@ -1343,7 +1351,7 @@
     const rows = (arr || []).map((val, idx) => `
       <div class="bullet-row">
         <span style="color:var(--text-muted);font-size:13px;">\u2022</span>
-        <input class="line-input" data-bullet="${field}" data-idx="${idx}" value="${escapeHtml(val)}" placeholder="Type a point..." />
+        <input autocomplete="off" class="line-input" data-bullet="${field}" data-idx="${idx}" value="${escapeHtml(val)}" placeholder="Type a point..." />
         <button class="row-btn" data-action="remove-bullet" data-field="${field}" data-idx="${idx}" title="Remove">\u2715</button>
       </div>
     `).join('');
@@ -1388,10 +1396,11 @@
     const uploadInput = document.getElementById('json-upload-input');
     if (uploadInput) uploadInput.addEventListener('change', (e) => actionHandleUploadFile(e.target.files[0]));
 
-    // Simple field inputs (data-path) — includes <select> for currency
+    // Simple field inputs (data-path) — includes <select autocomplete="off"> for currency
     app.querySelectorAll('input[data-path], select[data-path]').forEach(inp => {
       inp.addEventListener('input', (e) => {
         const path = inp.getAttribute('data-path');
+        maybeCheckpointInput('path:' + path);
         setPath(cur, path, e.target.value);
         scheduleSave();
         if (path === 'dashboardLinkUrl' || path === 'dashboardLinkText') {
@@ -1416,7 +1425,9 @@
     // Table title
     app.querySelectorAll('input[data-table-title]').forEach(inp => {
       inp.addEventListener('input', (e) => {
-        const t = cur.tables.find(t => t.id === inp.getAttribute('data-table-title'));
+        const tableId = inp.getAttribute('data-table-title');
+        maybeCheckpointInput('table-title:' + tableId);
+        const t = cur.tables.find(t => t.id === tableId);
         t.title = e.target.value;
         scheduleSave();
       });
@@ -1425,9 +1436,13 @@
     // Cell inputs
     app.querySelectorAll('input.cell-input').forEach(inp => {
       inp.addEventListener('input', (e) => {
-        const t = cur.tables.find(t => t.id === inp.getAttribute('data-table'));
-        const row = t.rows.find(r => r.id === inp.getAttribute('data-row'));
-        row.cells[inp.getAttribute('data-cell')] = e.target.value;
+        const tableId = inp.getAttribute('data-table');
+        const rowId = inp.getAttribute('data-row');
+        const cellKey = inp.getAttribute('data-cell');
+        maybeCheckpointInput('cell:' + tableId + ':' + rowId + ':' + cellKey);
+        const t = cur.tables.find(t => t.id === tableId);
+        const row = t.rows.find(r => r.id === rowId);
+        row.cells[cellKey] = e.target.value;
         scheduleSave();
       });
 
@@ -1467,6 +1482,7 @@
       inp.addEventListener('input', (e) => {
         const field = inp.getAttribute('data-bullet');
         const idx = parseInt(inp.getAttribute('data-idx'), 10);
+        maybeCheckpointInput('bullet:' + field + ':' + idx);
         cur[field][idx] = e.target.value;
         scheduleSave();
       });
