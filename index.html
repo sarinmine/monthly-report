@@ -866,15 +866,8 @@
     const summaryMonthLabel = r.summaryMonth && r.summaryMonth.trim() ? r.summaryMonth.trim() : '';
     const budgetDisplay = (r.budgetAmount && r.budgetAmount.trim()) ? `${eesc(r.budgetCurrency || '')} ${eesc(r.budgetAmount)}`.trim() : '';
 
-    // Match the overall content width to the widest table in this report, so the greeting/
-    // details section doesn't look narrow/cramped next to much wider data tables (e.g. the
-    // Branding/Conversion tables, which sum to 1880px of fixed column widths).
-    const estimateTableWidth = (t) => {
-      const cols = t.columns || DEFAULT_COLUMNS;
-      if (t.fixedWidths) return cols.reduce((sum, c) => sum + (c.width || 100), 0);
-      return 1100;
-    };
-    const contentWidth = Math.max(1000, ...(r.tables || []).map(estimateTableWidth));
+    // Text/greeting area width — independent of table widths, which keep their own sizing.
+    const contentWidth = 1300;
 
     const detailRow = (label, valueHtml) => `
       <tr>
