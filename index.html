@@ -344,7 +344,7 @@
       headerColor: FIXED_HEADER_COLOR,
       totalColor: FIXED_TOTAL_COLOR,
       columns: DEFAULT_COLUMNS,
-      rows: (cols) => [rowWith(cols, { month: 'June' }), rowWith(cols, { month: 'July' }), totalRowWith(cols, { month: 'TOTAL' })]
+      rows: (cols) => [rowWith(cols, { month: 'June' }), rowWith(cols, { month: 'July' }), totalRowWith(cols, { month: 'Total' })]
     },
     destination: {
       label: 'Destination Properties',
@@ -395,7 +395,7 @@
       ],
       rows: (cols) => [
         ...['January', 'February', 'March', 'April', 'May', 'June', 'July'].map(m => rowWith(cols, { month: m })),
-        totalRowWith(cols, { month: 'TOTAL' })
+        totalRowWith(cols, { month: 'Total' })
       ]
     },
     conversion: {
@@ -422,7 +422,7 @@
       ],
       rows: (cols) => [
         ...['January', 'February', 'March', 'April', 'May', 'June', 'July'].map(m => rowWith(cols, { month: m })),
-        totalRowWith(cols, { month: 'TOTAL' })
+        totalRowWith(cols, { month: 'Total' })
       ]
     }
   };
@@ -856,7 +856,7 @@
   function buildEmailHtml(r) {
     const FF = "font-family:Arial,Helvetica,sans-serif;";
     const summaryMonthLabel = r.summaryMonth && r.summaryMonth.trim() ? r.summaryMonth.trim() : '';
-    const budgetDisplay = (r.budgetAmount && r.budgetAmount.trim()) ? `${eesc(r.budgetAmount)} ${eesc(r.budgetCurrency || '')}`.trim() : '';
+    const budgetDisplay = (r.budgetAmount && r.budgetAmount.trim()) ? `${eesc(r.budgetCurrency || '')} ${eesc(r.budgetAmount)}`.trim() : '';
 
     const detailRow = (label, valueHtml) => `
       <tr>
@@ -995,7 +995,7 @@
     }
 
     return `
-<table role="presentation" width="680" cellpadding="0" cellspacing="0" border="0" style="width:680px;max-width:100%;${FF}font-size:14px;color:#1a1f27;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;${FF}font-size:14px;color:#1a1f27;">
   <tr><td style="padding:0 0 10px 0;">Dear Khun ${eesc(r.dearName)},</td></tr>
   <tr><td style="padding:0 0 10px 0;">I hope you are doing well.</td></tr>
   <tr><td style="padding:0 0 18px 0;">Please find below details for ${eesc(r.attributionFor)} attribution report as of ${eesc(formatDisplayDate(r.asOfDate))}.</td></tr>
