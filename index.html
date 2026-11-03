@@ -207,6 +207,7 @@
     white-space: normal; word-break: break-word; line-height: 1.3; padding: 10px 6px; font-size: 12px;
   }
   table.perf td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; vertical-align: middle; }
+  table.perf.fixed-cols td { padding: 8px 4px; }
   table.perf tr.total-row td { background: var(--row-total-color, var(--total-bg)); font-weight: 700; }
   table.perf input.cell-input {
     width: 100%; min-width: 60px; border: none; background: transparent; text-align: center;
@@ -417,18 +418,18 @@
       totalColor: FIXED_TOTAL_COLOR,
       fixedWidths: true,
       columns: [
-        { key: 'month', label: 'Month', width: 90 },
-        { key: 'spending', label: 'Spending', width: 90 },
-        { key: 'impressions', label: 'Impressions', width: 90 },
-        { key: 'cpm', label: 'CPM', width: 90 },
-        { key: 'clicks', label: 'Clicks', width: 90 },
-        { key: 'cpc', label: 'CPC', width: 90 },
-        { key: 'ctr', label: 'CTR', width: 90 },
-        { key: 'newUsers', label: 'New Users', width: 90 },
-        { key: 'returningUsers', label: 'Returning Users', width: 100 },
-        { key: 'sessions', label: 'Sessions', width: 100 },
-        { key: 'engagedSessions', label: 'Engaged Sessions', width: 100 },
-        { key: 'engagementRate', label: 'Engagement Rate', width: 100 },
+        { key: 'month', label: 'Month', width: 110 },
+        { key: 'spending', label: 'Spending', width: 110 },
+        { key: 'impressions', label: 'Impressions', width: 110 },
+        { key: 'cpm', label: 'CPM', width: 110 },
+        { key: 'clicks', label: 'Clicks', width: 110 },
+        { key: 'cpc', label: 'CPC', width: 110 },
+        { key: 'ctr', label: 'CTR', width: 110 },
+        { key: 'newUsers', label: 'New Users', width: 110 },
+        { key: 'returningUsers', label: 'Returning Users', width: 120 },
+        { key: 'sessions', label: 'Sessions', width: 120 },
+        { key: 'engagedSessions', label: 'Engaged Sessions', width: 120 },
+        { key: 'engagementRate', label: 'Engagement Rate', width: 120 },
         { key: 'avgEngagementTime', label: 'Avg. Engagement Time / Session (Sec)', width: 200 }
       ],
       rows: (cols) => [
@@ -443,18 +444,18 @@
       totalColor: FIXED_TOTAL_COLOR,
       fixedWidths: true,
       columns: [
-        { key: 'month', label: 'Month', width: 90 },
-        { key: 'spending', label: 'Spending', width: 90 },
-        { key: 'impressions', label: 'Impressions', width: 90 },
-        { key: 'cpm', label: 'CPM', width: 90 },
-        { key: 'clicks', label: 'Clicks', width: 90 },
-        { key: 'cpc', label: 'CPC', width: 90 },
-        { key: 'ctr', label: 'CTR', width: 90 },
-        { key: 'bookings', label: 'Bookings', width: 90 },
-        { key: 'cpa', label: 'CPA', width: 100 },
-        { key: 'cvr', label: 'CVR', width: 100 },
-        { key: 'abv', label: 'ABV', width: 100 },
-        { key: 'revenue', label: 'Revenue', width: 100 },
+        { key: 'month', label: 'Month', width: 110 },
+        { key: 'spending', label: 'Spending', width: 110 },
+        { key: 'impressions', label: 'Impressions', width: 110 },
+        { key: 'cpm', label: 'CPM', width: 110 },
+        { key: 'clicks', label: 'Clicks', width: 110 },
+        { key: 'cpc', label: 'CPC', width: 110 },
+        { key: 'ctr', label: 'CTR', width: 110 },
+        { key: 'bookings', label: 'Bookings', width: 110 },
+        { key: 'cpa', label: 'CPA', width: 120 },
+        { key: 'cvr', label: 'CVR', width: 120 },
+        { key: 'abv', label: 'ABV', width: 120 },
+        { key: 'revenue', label: 'Revenue', width: 120 },
         { key: 'roomNights', label: 'Room Nights', width: 100 },
         { key: 'roas', label: 'ROAS', width: 100 }
       ],
@@ -985,7 +986,7 @@
             return `
             <tr${rowBg ? ` style="background:${rowBg};"` : ''}>
               ${cols.map(c => {
-                const cellStyle = `${c.width ? `width:${c.width}px;` : ''}font-size:13.5px;text-align:center;vertical-align:middle;white-space:nowrap;padding:10px 14px;${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;`;
+                const cellStyle = `${c.width ? `width:${c.width}px;` : ''}font-size:13.5px;text-align:center;vertical-align:middle;white-space:nowrap;padding:${c.width ? '10px 6px' : '10px 14px'};${row.isTotal ? 'font-weight:bold;' : ''}color:#1a1f27;`;
                 if (c.merge) {
                   const span = mergeSpans[c.key][rIdx];
                   if (!span.show) return '';
