@@ -368,7 +368,7 @@
       noStripe: true,
       columns: [
         { key: 'month', label: 'Month', merge: true },
-        { key: 'destination', label: 'Destination / Properties' },
+        { key: 'destination', label: 'Destination Properties' },
         { key: 'spending', label: 'Spending' },
         { key: 'bookings', label: 'Bookings' },
         { key: 'revenue', label: 'Revenue' },
@@ -401,12 +401,11 @@
         { key: 'roas', label: 'ROAS' }
       ],
       rows: (cols) => [
-        rowWith(cols, { month: 'June', campaign: 'Thailand PT' }),
-        rowWith(cols, { campaign: 'China PT' }),
-        rowWith(cols, { campaign: 'Maldives PT' }),
-        rowWith(cols, { campaign: 'Sri Lanka PT' }),
-        rowWith(cols, { campaign: 'Vietnam PT' }),
-        rowWith(cols, { campaign: 'The Rest of ASIA PT' }),
+        rowWith(cols, { month: 'June', campaign: 'Anantara PT' }),
+        rowWith(cols, { campaign: 'Avani PT' }),
+        rowWith(cols, { campaign: 'Oaks PT' }),
+        rowWith(cols, { campaign: 'Tivoli PT' }),
+        rowWith(cols, { campaign: 'NH PT' }),
         rowWith(cols, { campaign: 'Minor RT' }),
         totalRowWith(cols, { campaign: 'Total' })
       ]
