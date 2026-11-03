@@ -337,12 +337,15 @@
     { key: 'roas', label: 'ROAS' }
   ];
 
+  DEFAULT_COLUMNS.forEach(c => { c.width = 90; });
+
   const TEMPLATES = {
     standard: {
       label: 'Standard Performance',
       title: 'New Channel Table',
       headerColor: FIXED_HEADER_COLOR,
       totalColor: FIXED_TOTAL_COLOR,
+      fixedWidths: true,
       columns: DEFAULT_COLUMNS,
       rows: (cols) => [rowWith(cols, { month: 'June' }), rowWith(cols, { month: 'July' }), totalRowWith(cols, { month: 'Total' })]
     },
@@ -443,8 +446,24 @@
     return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
+  function tableFixed(t) {
+    const tpl = TEMPLATES[t.template];
+    return !!(tpl && tpl.fixedWidths) || !!t.fixedWidths;
+  }
+
   function tableColumns(t) {
-    return t.columns || DEFAULT_COLUMNS;
+    const cols = t.columns || DEFAULT_COLUMNS;
+    const tpl = TEMPLATES[t.template];
+    if (!tpl || !tpl.fixedWidths) return cols;
+    // saved reports may predate column widths: take widths from the template by column key
+    return cols.map(c => {
+      const tc = tpl.columns.find(x => x.key === c.key);
+      return (tc && tc.width) ? Object.assign({}, c, { width: tc.width }) : c;
+    });
+  }
+
+  function tableTotalWidth(t) {
+    return tableColumns(t).reduce((sum, c) => sum + (c.width || 100), 0);
   }
 
   function blankRow(cols) {
@@ -889,14 +908,14 @@
       </table>`;
 
     const perfTable = (t) => {
-      const cols = t.columns || DEFAULT_COLUMNS;
+      const cols = tableColumns(t);
       const rows = t.rows.filter(row => cols.some(c => (row.cells[c.key] || '').trim() !== ''));
       if (rows.length === 0) return '';
       const headerBg = t.headerColor || FIXED_HEADER_COLOR;
       const headerText = contrastColor(headerBg);
       const totalBg = t.totalColor || FIXED_TOTAL_COLOR;
-      const tableStyle = t.fixedWidths
-        ? 'border-collapse:collapse;width:100%;margin-bottom:18px;table-layout:fixed;'
+      const tableStyle = tableFixed(t)
+        ? `border-collapse:collapse;width:${tableTotalWidth(t)}px;margin-bottom:18px;table-layout:fixed;`
         : `border-collapse:collapse;width:${cols.length * 90}px;margin-bottom:18px;`;
 
       const mergeSpans = {};
@@ -1333,7 +1352,7 @@
         </div>
 
         <div class="table-scroll">
-          <table class="perf ${t.fixedWidths ? 'fixed-cols' : ''}" style="min-width:${t.fixedWidths ? cols.reduce((s, c) => s + (c.width || 100), 0) : cols.length * 90}px;">
+          <table class="perf ${tableFixed(t) ? 'fixed-cols' : ''}" style="min-width:${tableFixed(t) ? tableTotalWidth(t) : cols.length * 90}px;">
             <thead>
               <tr style="--row-header-color:${headerBg};--row-header-text:${headerText};">
                 ${cols.map(c => `<th ${c.width ? `style="width:${c.width}px;"` : ''}>${c.label}</th>`).join('')}
