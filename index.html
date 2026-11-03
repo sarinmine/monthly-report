@@ -290,19 +290,29 @@
   const STORAGE_KEYS = {
     direct: 'monthly_reports_direct',
     minor: 'monthly_reports_minor',
-    corporate: 'monthly_reports_corporate'
+    corporate: 'monthly_reports_corporate',
+    mea: 'monthly_reports_mea'
   };
   const TAB_LABELS = {
     direct: 'Direct Template',
     minor: 'Minor Properties Template',
-    corporate: 'Minor Corporate Template'
+    corporate: 'Minor Corporate Asia Template',
+    mea: 'Minor Corporate MEA Template'
   };
   const TAB_TEMPLATE_KEYS = {
     direct: ['branding', 'conversion'],
     minor: ['standard'],
-    corporate: ['destination']
+    corporate: ['destination'],
+    mea: ['campaign']
   };
   const CURRENCIES = ['USD', 'THB', 'EUR', 'GBP', 'SGD', 'AUD', 'CNY', 'JPY'];
+  const BRAND_LABELS = [
+    { key: 'anantara', label: 'Anantara' },
+    { key: 'avani', label: 'Avani' },
+    { key: 'nh', label: 'NH' },
+    { key: 'oaks', label: 'Oaks' },
+    { key: 'tivoli', label: 'Tivoli' }
+  ];
   const DEST_LABELS = [
     { key: 'thailand', label: 'Thailand' },
     { key: 'china', label: 'China' },
@@ -375,6 +385,32 @@
         totalRowWith(cols, { destination: 'Total' })
       ]
     },
+    campaign: {
+      label: 'Campaign Summary',
+      title: 'Campaign Summary',
+      headerColor: FIXED_HEADER_COLOR,
+      totalColor: '#BFDBFE',
+      rowAccentColor: '',
+      noStripe: true,
+      columns: [
+        { key: 'month', label: 'Month', merge: true },
+        { key: 'campaign', label: 'Campaigns' },
+        { key: 'spending', label: 'Spending' },
+        { key: 'bookings', label: 'Bookings' },
+        { key: 'revenue', label: 'Revenue' },
+        { key: 'roas', label: 'ROAS' }
+      ],
+      rows: (cols) => [
+        rowWith(cols, { month: 'June', campaign: 'Thailand PT' }),
+        rowWith(cols, { campaign: 'China PT' }),
+        rowWith(cols, { campaign: 'Maldives PT' }),
+        rowWith(cols, { campaign: 'Sri Lanka PT' }),
+        rowWith(cols, { campaign: 'Vietnam PT' }),
+        rowWith(cols, { campaign: 'The Rest of ASIA PT' }),
+        rowWith(cols, { campaign: 'Minor RT' }),
+        totalRowWith(cols, { campaign: 'Total' })
+      ]
+    },
     branding: {
       label: 'Branding Metrics',
       title: 'Branding',
@@ -430,9 +466,9 @@
     }
   };
 
-  let reportsByTab = { direct: [], minor: [], corporate: [] };
-  let currentIdByTab = { direct: null, minor: null, corporate: null };
-  let undoStackByTab = { direct: [], minor: [], corporate: [] };
+  let reportsByTab = { direct: [], minor: [], corporate: [], mea: [] };
+  let currentIdByTab = { direct: null, minor: null, corporate: null, mea: null };
+  let undoStackByTab = { direct: [], minor: [], corporate: [], mea: [] };
   let activeTab = 'direct';
   let loaded = false;
   let pendingDeleteReport = false;
@@ -506,6 +542,7 @@
     if (tabKey === 'direct') return [blankTable('Branding', 'branding'), blankTable('Conversion (Actual Booking & Revenue based on Attribution Report)', 'conversion')];
     if (tabKey === 'minor') return [blankTable('Overall Performance', 'standard'), blankTable('Channel 1: Display PT', 'standard'), blankTable('Channel 2: Display RT', 'standard')];
     if (tabKey === 'corporate') return [blankTable('Destination Properties', 'destination')];
+    if (tabKey === 'mea') return [blankTable('Campaign Summary', 'campaign')];
     return [blankTable(null, 'standard')];
   }
 
@@ -542,6 +579,7 @@
       base.destSummaries = { thailand: '', china: '', maldives: '', vietnam: '', srilanka: '', restOfAsia: '' };
       base.overallKeyHighlights = [''];
       DEST_LABELS.forEach(d => { base[nextStepFieldFor(d.key)] = ['']; });
+      base.brandSummaries = { anantara: '', avani: '', nh: '', oaks: '', tivoli: '' };
       base.brandSummaryNote = '';
       base.brandBullets = [''];
     }
@@ -978,7 +1016,9 @@
       const hasPerfSummary = (r.perfSummaryBullets || []).some(b => b.trim());
       const hasOverallHighlights = (r.overallKeyHighlights || []).some(b => b.trim());
       const nextStepDests = DEST_LABELS.filter(d => (r[nextStepFieldFor(d.key)] || []).some(b => b.trim()));
-      const hasBrand = (r.brandSummaryNote && r.brandSummaryNote.trim()) || (r.brandBullets || []).some(b => b.trim());
+      const brandItems = BRAND_LABELS.filter(b => r.brandSummaries && r.brandSummaries[b.key] && r.brandSummaries[b.key].trim());
+      const extraBrandBullets = (r.brandBullets || []).filter(b => b && b.trim());
+      const hasBrand = (r.brandSummaryNote && r.brandSummaryNote.trim()) || brandItems.length > 0 || extraBrandBullets.length > 0;
 
       bodyHtml = `
         ${hasPerfSummary ? `
@@ -995,18 +1035,23 @@
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Overall Key Highlights :</td></tr>
         <tr><td style="padding:0 0 6px 0;">${bulletList(r.overallKeyHighlights, FF)}</td></tr>` : ''}
         ${nextStepDests.length > 0 ? `
-        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Steps &amp; Recommendations :</td></tr>
         ${nextStepDests.map(d => `
           <tr><td style="font-style:italic;font-weight:normal;padding:10px 0 2px 0;">${eesc(d.label)}</td></tr>
           <tr><td style="padding:0 0 6px 0;">${bulletList(r[nextStepFieldFor(d.key)], FF)}</td></tr>
         `).join('')}` : ''}
         ${hasBrand ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Brand Performance Summary : ${eesc(r.brandSummaryNote)}</td></tr>
-        <tr><td style="padding:0 0 6px 0;">${bulletList(r.brandBullets, FF)}</td></tr>` : ''}
+        <tr><td style="padding:0 0 6px 0;">
+          <ul style="${FF}font-size:14px;color:#1a1f27;margin:0 0 6px;padding-left:20px;">
+            ${brandItems.map(b => `<li style="margin-bottom:5px;line-height:1.6;">${eesc(b.label)}: ${eesc(r.brandSummaries[b.key])}</li>`).join('')}
+            ${extraBrandBullets.map(b => `<li style="margin-bottom:5px;line-height:1.6;">${eesc(b)}</li>`).join('')}
+          </ul>
+        </td></tr>` : ''}
       `;
     } else {
       const hasSummary = (r.monthRevenue && r.monthRevenue.trim()) || (r.allTimeRevenue && r.allTimeRevenue.trim());
-      const isMinor = r.tabType === 'minor';
+      const isMinor = true; // Direct and Minor templates share this layout
       const hasPerfSummaryStd = isMinor && (r.performanceSummary || []).some(v => v.trim());
       const nextStepTitle = isMinor ? 'Next Steps &amp; Recommendations' : 'Next Step';
       const hasKeyHighlights = (r.keyHighlights || []).some(v => v.trim());
@@ -1249,7 +1294,7 @@
   }
 
   function renderStandardBody(cur) {
-    const isMinor = activeTab === 'minor';
+    const isMinor = true; // Direct and Minor templates share this layout
     if (isMinor && !Array.isArray(cur.performanceSummary)) cur.performanceSummary = ['']; // older saved reports
     const summaryMonthLabel = cur.summaryMonth && cur.summaryMonth.trim() ? cur.summaryMonth.trim() : '\u2014';
     return `
@@ -1276,6 +1321,11 @@
   }
 
   function renderCorporateBody(cur) {
+    // older saved reports may be missing some list fields
+    ['overallKeyHighlights', 'brandBullets', 'perfSummaryBullets'].forEach(f => { if (!Array.isArray(cur[f])) cur[f] = ['']; });
+    DEST_LABELS.forEach(d => { const f = nextStepFieldFor(d.key); if (!Array.isArray(cur[f])) cur[f] = ['']; });
+    if (!cur.destSummaries) cur.destSummaries = {};
+    if (!cur.brandSummaries) cur.brandSummaries = { anantara: '', avani: '', nh: '', oaks: '', tivoli: '' }; // older saved reports
     return `
       <h2 class="summary-heading">
         <input autocomplete="off" class="line-input" data-path="perfSummaryMonth" placeholder="June" value="${escapeHtml(cur.perfSummaryMonth)}" /> Performance Summary :
@@ -1295,7 +1345,7 @@
       <h2 class="summary-heading">Overall Key Highlights :</h2>
       ${renderBulletEditor(cur.overallKeyHighlights, 'overallKeyHighlights')}
 
-      <h2 class="summary-heading">Next Step :</h2>
+      <h2 class="summary-heading">Next Steps &amp; Recommendations :</h2>
       ${DEST_LABELS.map(d => `
         <p class="dest-substep-label">${escapeHtml(d.label)}</p>
         ${renderBulletEditor(cur[nextStepFieldFor(d.key)], nextStepFieldFor(d.key))}
@@ -1304,6 +1354,14 @@
       <h2 class="summary-heading">Additional Details :</h2>
 
       <h2 class="summary-heading">Brand Performance Summary : <input autocomplete="off" class="line-input wide" data-path="brandSummaryNote" value="${escapeHtml(cur.brandSummaryNote)}" /></h2>
+      <div class="dest-summary-list">
+        ${BRAND_LABELS.map(b => `
+          <div class="dest-summary-row">
+            <span style="min-width:90px;flex-shrink:0;font-size:14px;">${escapeHtml(b.label)}:</span>
+            <input autocomplete="off" class="line-input wide" data-path="brandSummaries.${b.key}" placeholder="Generated ... bookings, resulting ... in revenue." value="${escapeHtml(cur.brandSummaries[b.key])}" />
+          </div>
+        `).join('')}
+      </div>
       ${renderBulletEditor(cur.brandBullets, 'brandBullets')}
     `;
   }
