@@ -1008,7 +1008,7 @@
       const hasSummary = (r.monthRevenue && r.monthRevenue.trim()) || (r.allTimeRevenue && r.allTimeRevenue.trim());
       const isMinor = r.tabType === 'minor';
       const hasPerfSummaryStd = isMinor && (r.performanceSummary || []).some(v => v.trim());
-      const nextStepTitle = isMinor ? 'Next Step &amp; Recommendations' : 'Next Step';
+      const nextStepTitle = isMinor ? 'Next Steps &amp; Recommendations' : 'Next Step';
       const hasKeyHighlights = (r.keyHighlights || []).some(v => v.trim());
       const hasNextSteps = (r.nextSteps || []).some(v => v.trim());
       const hasOthers = (r.others || []).some(o => o.trim());
@@ -1267,7 +1267,7 @@
       <h2 class="summary-heading">Key Highlights :</h2>
       ${renderBulletEditor(cur.keyHighlights, 'keyHighlights')}
 
-      <h2 class="summary-heading">${isMinor ? 'Next Step &amp; Recommendations :' : 'Next Step :'}</h2>
+      <h2 class="summary-heading">${isMinor ? 'Next Steps &amp; Recommendations :' : 'Next Step :'}</h2>
       ${renderBulletEditor(cur.nextSteps, 'nextSteps')}
 
       <h2 class="summary-heading"><input autocomplete="off" class="line-input" style="font-weight:700;font-size:15px;" data-path="othersTitle" placeholder="Others" value="${escapeHtml(cur.othersTitle)}" /> :</h2>
