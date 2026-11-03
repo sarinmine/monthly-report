@@ -504,7 +504,7 @@
 
   function defaultTablesForTab(tabKey) {
     if (tabKey === 'direct') return [blankTable('Branding', 'branding'), blankTable('Conversion (Actual Booking & Revenue based on Attribution Report)', 'conversion')];
-    if (tabKey === 'minor') return [blankTable('Overall Performance', 'standard'), blankTable('Channel 1: Display PT', 'standard')];
+    if (tabKey === 'minor') return [blankTable('Overall Performance', 'standard'), blankTable('Channel 1: Display PT', 'standard'), blankTable('Channel 2: Display PT', 'standard')];
     if (tabKey === 'corporate') return [blankTable('Destination Properties', 'destination')];
     return [blankTable(null, 'standard')];
   }
@@ -530,6 +530,7 @@
       summaryMonth: '',
       monthRevenue: '',
       allTimeRevenue: '',
+      performanceSummary: [''],
       keyHighlights: [''],
       nextSteps: [''],
       othersTitle: 'Others',
@@ -1005,6 +1006,9 @@
       `;
     } else {
       const hasSummary = (r.monthRevenue && r.monthRevenue.trim()) || (r.allTimeRevenue && r.allTimeRevenue.trim());
+      const isMinor = r.tabType === 'minor';
+      const hasPerfSummaryStd = isMinor && (r.performanceSummary || []).some(v => v.trim());
+      const nextStepTitle = isMinor ? 'Next Step &amp; Recommendations' : 'Next Step';
       const hasKeyHighlights = (r.keyHighlights || []).some(v => v.trim());
       const hasNextSteps = (r.nextSteps || []).some(v => v.trim());
       const hasOthers = (r.others || []).some(o => o.trim());
@@ -1012,11 +1016,14 @@
         ${hasSummary ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:8px 0 8px 0;">Summary of ${eesc(summaryMonthLabel)} what happened?</td></tr>
         <tr><td style="padding:0 0 6px 0;">${summaryBullets}</td></tr>` : ''}
+        ${hasPerfSummaryStd ? `
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Performance Summary :</td></tr>
+        <tr><td style="padding:0 0 6px 0;">${bulletList(r.performanceSummary, FF)}</td></tr>` : ''}
         ${hasKeyHighlights ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Key Highlights :</td></tr>
         <tr><td style="padding:0 0 6px 0;">${bulletList(r.keyHighlights, FF)}</td></tr>` : ''}
         ${hasNextSteps ? `
-        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">Next Step :</td></tr>
+        <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">${nextStepTitle} :</td></tr>
         <tr><td style="padding:0 0 6px 0;">${bulletList(r.nextSteps, FF)}</td></tr>` : ''}
         ${hasOthers ? `
         <tr><td style="font-size:15px;font-weight:bold;padding:18px 0 8px 0;">${eesc(r.othersTitle && r.othersTitle.trim() ? r.othersTitle.trim() : 'Others')} :</td></tr>
@@ -1242,6 +1249,8 @@
   }
 
   function renderStandardBody(cur) {
+    const isMinor = activeTab === 'minor';
+    if (isMinor && !Array.isArray(cur.performanceSummary)) cur.performanceSummary = ['']; // older saved reports
     const summaryMonthLabel = cur.summaryMonth && cur.summaryMonth.trim() ? cur.summaryMonth.trim() : '\u2014';
     return `
       <h2 class="summary-heading">
@@ -1252,10 +1261,13 @@
         <li>All Time Reported Revenue: <input autocomplete="off" class="line-input wide" data-path="allTimeRevenue" placeholder="USD 81,358.95 with ROAS 33.00" value="${escapeHtml(cur.allTimeRevenue)}" /></li>
       </ul>
 
+      ${isMinor ? `<h2 class="summary-heading">Performance Summary :</h2>
+      ${renderBulletEditor(cur.performanceSummary, 'performanceSummary')}
+      ` : ''}
       <h2 class="summary-heading">Key Highlights :</h2>
       ${renderBulletEditor(cur.keyHighlights, 'keyHighlights')}
 
-      <h2 class="summary-heading">Next Step :</h2>
+      <h2 class="summary-heading">${isMinor ? 'Next Step &amp; Recommendations :' : 'Next Step :'}</h2>
       ${renderBulletEditor(cur.nextSteps, 'nextSteps')}
 
       <h2 class="summary-heading"><input autocomplete="off" class="line-input" style="font-weight:700;font-size:15px;" data-path="othersTitle" placeholder="Others" value="${escapeHtml(cur.othersTitle)}" /> :</h2>
